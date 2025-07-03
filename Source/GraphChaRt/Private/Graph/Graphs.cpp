@@ -3,6 +3,7 @@
 
 #include "Graph/Graphs.h"
 
+
 void UGraphBase::AddNode(const FGraphNode& Node)
 {
 	Nodes.AddUnique(Node);
@@ -10,12 +11,14 @@ void UGraphBase::AddNode(const FGraphNode& Node)
 
 bool UGraphBase::RemoveNode(const FName& NodeID)
 {
-	if (Nodes.Remove(NodeID) > 0) return true;
-	
-	return false;
+	return
+	Nodes.RemoveAll([&](const FGraphNode& Node)
+	{
+		return Node.NodeID == NodeID;
+	}) > 0;
 }
 
-bool UGraphBase::GetNode(FName NodeID, FGraphNode& OutNode)
+bool UGraphBase::GetNode(const FName& NodeID, FGraphNode& OutNode)
 {
 	for (const FGraphNode& Node : Nodes)
 	{
@@ -49,12 +52,18 @@ void UGraphBase::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyCh
 
 
 //UDirectedGraph
-void UDirectedGraph::AddEdge(const FGraphEdge& Edge)
+bool UDirectedGraph::AddEdge(const FDirectedEdge& Edge)
 {
-	Edges.Add(Edge);
+	if (Nodes.Contains(Edge.StartNodeID) && Nodes.Contains(Edge.EndNodeID))
+	{
+		Edges.Add(Edge);
+		return true;
+	}
 
 	//需要测试Edges.Add(Edge);会不会触发PostEditChangeProperty(),若触发则删去该句
 	//BuildAdjacencyList();
+	
+	return false;
 }
 
 TArray<FName> UDirectedGraph::GetNodeNeighbors(FName NodeID) const

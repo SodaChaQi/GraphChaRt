@@ -13,7 +13,7 @@
 /**
  * 
  */
-UCLASS(Abstract, BlueprintType)
+UCLASS(Abstract)
 class GRAPHCHART_API UGraphBase : public UDataAsset
 {
 	GENERATED_BODY()
@@ -32,13 +32,10 @@ public:
 	virtual bool RemoveNode(const FName& NodeID);
 
 	UFUNCTION(BlueprintCallable, Category = "Graph")
-	virtual bool GetNode(FName NodeID, FGraphNode& OutNode);
+	virtual bool GetNode(const FName& NodeID, FGraphNode& OutNode);
 
 	UFUNCTION(BlueprintPure, Category = "Graph")
 	virtual TArray<FName> GetNodeNeighbors(FName NodeID) const PURE_VIRTUAL(UGraphBase::GetNodeNeighbors, return TArray<FName>(););
-
-	UFUNCTION(BlueprintCallable, Category = "Graph")
-	virtual void AddEdge(const FGraphEdge& Edge) PURE_VIRTUAL(UGraphBase::AddEdge);
 
 	virtual void PostLoad() override;
 
@@ -57,7 +54,7 @@ protected:
 	
 };
 
-UCLASS(BlueprintType)
+UCLASS()
 class GRAPHCHART_API UDirectedGraph : public UGraphBase
 {
 	GENERATED_BODY()
@@ -65,9 +62,10 @@ class GRAPHCHART_API UDirectedGraph : public UGraphBase
 public:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Graph")
-	TArray<FGraphEdge> Edges;
+	TArray<FDirectedEdge> Edges;
 
-	virtual void AddEdge(const FGraphEdge& Edge) override;
+	UFUNCTION(BlueprintCallable, Category = "Graph")
+	bool AddEdge(const FDirectedEdge& Edge);
 
 	virtual TArray<FName> GetNodeNeighbors(FName NodeID) const override;
 
