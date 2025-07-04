@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
-
 #include "Graph/GraphElements.h"
 
 #include "Graphs.generated.h"
@@ -14,25 +13,39 @@
  * 
  */
 UCLASS(Abstract)
-class GRAPHCHART_API UGraphBase : public UDataAsset
+class GRAPHCHART_API UGraphBase : public UObject
 {
 	GENERATED_BODY()
 
 protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly,Category = "Graph")
-	TArray<FGraphNode> Nodes;
+	TMap<UObject*, TScriptInterface<IGraphNodeInterface>> Nodes;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly,Category = "Graph")
+	TMap<UObject*, TScriptInterface<IGraphEdgeInterface>> Edges;
 
 public:
 
 	UFUNCTION(BlueprintCallable, Category = "Graph")
-	virtual void AddNode(const FGraphNode& Node);
+	virtual bool AddNode(const FGraphNodeInfo& Node);
 
 	UFUNCTION(BlueprintCallable, Category = "Graph")
 	virtual bool RemoveNode(const FName& NodeID);
 
 	UFUNCTION(BlueprintCallable, Category = "Graph")
-	virtual bool GetNode(const FName& NodeID, FGraphNode& OutNode);
+	virtual bool GetNode(const FName& NodeID, FGraphNodeInfo& OutNode);
+
+	UFUNCTION(BlueprintCallable, Category = "Graph")
+	virtual bool AddEdge(const FGraphEdgeInfo& Edge);
+
+	UFUNCTION(BlueprintCallable, Category = "Graph")
+	virtual bool RemoveEdge(const FName& StartNodeID, const FName& EndNodeID);
+
+	virtual bool RemoveEdge(const FName& StartNodeID, const FName& EndNodeID, const float& Weight);
+
+	UFUNCTION(BlueprintCallable, Category = "Graph")
+	virtual bool GetEdge(const FName& StartNodeID, const FName& EndNodeID, FGraphEdgeInfo& OutEdge);
 
 	UFUNCTION(BlueprintPure, Category = "Graph")
 	virtual TArray<FName> GetNodeNeighbors(FName NodeID) const PURE_VIRTUAL(UGraphBase::GetNodeNeighbors, return TArray<FName>(););
@@ -52,24 +65,4 @@ protected:
 
 	virtual void BuildAdjacencyList() PURE_VIRTUAL(UGraphBase::BuildAdjacencyList);
 	
-};
-
-UCLASS()
-class GRAPHCHART_API UDirectedGraph : public UGraphBase
-{
-	GENERATED_BODY()
-
-public:
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Graph")
-	TArray<FDirectedEdge> Edges;
-
-	UFUNCTION(BlueprintCallable, Category = "Graph")
-	bool AddEdge(const FDirectedEdge& Edge);
-
-	virtual TArray<FName> GetNodeNeighbors(FName NodeID) const override;
-
-protected:
-
-	virtual void BuildAdjacencyList() override;
 };
