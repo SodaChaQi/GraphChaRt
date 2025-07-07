@@ -2,6 +2,7 @@
 
 #pragma once
 
+
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
 #include "Graph/GraphElements.h"
@@ -12,43 +13,71 @@
 /**
  * 
  */
+
+DECLARE_DELEGATE_OneParam(FOnNodeAdded, const FGraphNode&);
+DECLARE_DELEGATE_OneParam(FOnNodeRemoved, FGraphNode);
+
+template<	typename TGraphNode,
+			typename TGraphEdge,
+			typename = typename TEnableIf<TIsDerivedFrom<TGraphNode, FGraphNode>::Value, void>::Type,
+			typename = typename TEnableIf<TIsDerivedFrom<TGraphEdge, FGraphEdge>::Value, void>::Type
+		>
+class TGraphImpl
+{
+public:
+
+	virtual ~TGraphImpl() = default;
+	
+	TArray<TGraphNode> Nodes;
+
+	TArray<TGraphEdge> Edges;
+
+	FOnNodeAdded OnNodeAdded;
+
+	virtual bool AddNode(const TGraphNode& Node);
+	virtual bool GetNode(const FName& NodeID, TGraphNode& OutNode);
+	virtual bool RemoveNode(const FName& NodeID);
+
+	virtual bool AddEdge(const TGraphEdge& Edge);
+	virtual bool GetEdge(const FGraphEdgeID& NodeIDs, TGraphEdge& OutEdge);
+
+protected:
+
+	TMap<FName, FNodeNeighbors> AdjacencyList;
+
+	FORCEINLINE const TMap<FName, FNodeNeighbors>& GetAdjacencyList() { return AdjacencyList; }
+};
+
+
 UCLASS(Abstract)
 class GRAPHCHART_API UGraphBase : public UObject
 {
 	GENERATED_BODY()
 
-protected:
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly,Category = "Graph")
-	TMap<UObject*, TScriptInterface<IGraphNodeInterface>> Nodes;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly,Category = "Graph")
-	TMap<UObject*, TScriptInterface<IGraphEdgeInterface>> Edges;
-
 public:
 
-	UFUNCTION(BlueprintCallable, Category = "Graph")
-	virtual bool AddNode(const FGraphNodeInfo& Node);
+	UGraphBase();
 
 	UFUNCTION(BlueprintCallable, Category = "Graph")
-	virtual bool RemoveNode(const FName& NodeID);
+	void AddNode();
 
 	UFUNCTION(BlueprintCallable, Category = "Graph")
-	virtual bool GetNode(const FName& NodeID, FGraphNodeInfo& OutNode);
+	bool GetNode(const FName& NodeID, FGraphNode& OutNode);
 
 	UFUNCTION(BlueprintCallable, Category = "Graph")
-	virtual bool AddEdge(const FGraphEdgeInfo& Edge);
+	bool RemoveNode(const FName& NodeID);
 
 	UFUNCTION(BlueprintCallable, Category = "Graph")
-	virtual bool RemoveEdge(const FName& StartNodeID, const FName& EndNodeID);
-
-	virtual bool RemoveEdge(const FName& StartNodeID, const FName& EndNodeID, const float& Weight);
+	bool AddEdge(const FDirectedEdge& Edge);
 
 	UFUNCTION(BlueprintCallable, Category = "Graph")
-	virtual bool GetEdge(const FName& StartNodeID, const FName& EndNodeID, FGraphEdgeInfo& OutEdge);
+	bool GetEdge(const FName& StartNodeID, const FName& EndNodeID, FDirectedEdge& OutEdge);
+
+	UFUNCTION(BlueprintCallable, Category = "Graph")
+	bool RemoveEdge(const FName& StartNodeID, const FName& EndNodeID);
 
 	UFUNCTION(BlueprintPure, Category = "Graph")
-	virtual TArray<FName> GetNodeNeighbors(FName NodeID) const PURE_VIRTUAL(UGraphBase::GetNodeNeighbors, return TArray<FName>(););
+	TArray<FName> GetNodeNeighbors(FName NodeID);
 
 	virtual void PostLoad() override;
 
@@ -59,10 +88,9 @@ public:
 #endif
 
 protected:
-	
-	UPROPERTY(Transient)
-	TMap<FName, FNodeNeighbors> AdjacencyList;
 
-	virtual void BuildAdjacencyList() PURE_VIRTUAL(UGraphBase::BuildAdjacencyList);
+	TUniquePtr<TGraphImpl<FGraphNode, FDirectedEdge>> Graph;
+
+	void BuildAdjacencyList();
 	
 };
