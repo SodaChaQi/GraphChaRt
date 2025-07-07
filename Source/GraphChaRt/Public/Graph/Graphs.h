@@ -4,7 +4,6 @@
 
 
 #include "CoreMinimal.h"
-#include "Engine/DataAsset.h"
 #include "Graph/GraphElements.h"
 
 #include "Graphs.generated.h"
@@ -33,13 +32,17 @@ public:
 	TArray<TGraphEdge> Edges;
 
 	FOnNodeAdded OnNodeAdded;
+	FOnNodeRemoved OnNodeRemoved;
 
 	virtual bool AddNode(const TGraphNode& Node);
 	virtual bool GetNode(const FName& NodeID, TGraphNode& OutNode);
 	virtual bool RemoveNode(const FName& NodeID);
 
 	virtual bool AddEdge(const TGraphEdge& Edge);
-	virtual bool GetEdge(const FGraphEdgeID& NodeIDs, TGraphEdge& OutEdge);
+	virtual bool GetEdge(const FGraphEdgeID& NodeID, TGraphEdge& OutEdge);
+	virtual bool RemoveEdge(const FGraphEdgeID& EdgeID);
+
+	TArray<FName> GetNodeNeighbors(FName NodeID);
 
 protected:
 
@@ -48,8 +51,7 @@ protected:
 	FORCEINLINE const TMap<FName, FNodeNeighbors>& GetAdjacencyList() { return AdjacencyList; }
 };
 
-
-UCLASS(Abstract)
+UCLASS()
 class GRAPHCHART_API UGraphBase : public UObject
 {
 	GENERATED_BODY()
@@ -71,10 +73,10 @@ public:
 	bool AddEdge(const FDirectedEdge& Edge);
 
 	UFUNCTION(BlueprintCallable, Category = "Graph")
-	bool GetEdge(const FName& StartNodeID, const FName& EndNodeID, FDirectedEdge& OutEdge);
+	bool GetEdge(const FGraphEdgeID& NodeID, FDirectedEdge& OutEdge);
 
 	UFUNCTION(BlueprintCallable, Category = "Graph")
-	bool RemoveEdge(const FName& StartNodeID, const FName& EndNodeID);
+	bool RemoveEdge(const FGraphEdgeID& EdgeID);
 
 	UFUNCTION(BlueprintPure, Category = "Graph")
 	TArray<FName> GetNodeNeighbors(FName NodeID);
@@ -83,7 +85,7 @@ public:
 
 #if WITH_EDITOR
 
-	virtual void PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent) override;
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 
 #endif
 

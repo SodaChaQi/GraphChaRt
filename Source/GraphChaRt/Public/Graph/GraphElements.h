@@ -193,8 +193,6 @@ struct FDirectedEdge : public FGraphEdge
 		return !(*this == Other);
 	}
 
-	TPair<FName, FName> GetNormalizeNodes() const = delete;
-
 private:
 
 	friend uint32 GetTypeHash(const FDirectedEdge& Edge)
@@ -213,7 +211,7 @@ struct FUndirectedWeightedEdge : public FUndirectedEdge
 
 	FUndirectedWeightedEdge() = default;
 
-	FUndirectedWeightedEdge(const FName& InStartNodeID, const FName& InEndNodeID, float InWeight)
+	FUndirectedWeightedEdge(const FName& InStartNodeID, const FName& InEndNodeID, const float InWeight)
 		: FUndirectedEdge(InStartNodeID, InEndNodeID), Weight(InWeight)
 	{
 		
@@ -267,8 +265,6 @@ struct FDirectedWeightedEdge : public FDirectedEdge
 	{
 		return !(*this == Other);
 	}
-
-	TPair<FName, FName> GetNormalizeNodes() const = delete;
 
 private:
 
