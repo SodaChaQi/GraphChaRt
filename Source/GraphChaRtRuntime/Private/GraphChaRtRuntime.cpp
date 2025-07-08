@@ -1,15 +1,15 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "GraphChaRtCore.h"
+#include "GraphChaRtRuntime.h"
 
-#define LOCTEXT_NAMESPACE "FGraphChaRtModule"
+#define LOCTEXT_NAMESPACE "FGraphChaRtRunTimeModule"
 
-void FGraphChaRtCoreModule::StartupModule()
+void FGraphChaRtRuntimeModule::StartupModule()
 {
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
 }
 
-void FGraphChaRtCoreModule::ShutdownModule()
+void FGraphChaRtRuntimeModule::ShutdownModule()
 {
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
@@ -17,4 +17,4 @@ void FGraphChaRtCoreModule::ShutdownModule()
 
 #undef LOCTEXT_NAMESPACE
 	
-IMPLEMENT_MODULE(FGraphChaRtCoreModule, GraphChaRtCore)
+IMPLEMENT_MODULE(FGraphChaRtRuntimeModule, GraphChaRtRuntime)

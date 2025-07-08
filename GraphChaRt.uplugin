@@ -21,6 +21,11 @@
 			"LoadingPhase": "PreDefault"
 		},
 		{
+			"Name": "GraphChaRtRuntime",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
+		{
 			"Name": "GraphChaRtEditor",
 			"Type": "Editor",
 			"LoadingPhase": "Default"
