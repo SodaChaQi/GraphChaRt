@@ -26,7 +26,7 @@ public class GraphChaRtEditor : ModuleRules
 			new string[]
 			{
 				"Core",
-				"GraphChaRt",
+				"GraphChaRtCore",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);

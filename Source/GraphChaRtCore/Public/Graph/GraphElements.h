@@ -66,6 +66,10 @@ struct FGraphEdgeID
 		return this->Reverse();
 	}
 
+	FORCEINLINE bool GetIsOrderSensitive() const { return bIsOrderSensitive; }
+
+	friend struct FGraphEdge;
+
 protected:
 	bool bIsOrderSensitive;
 
@@ -128,6 +132,12 @@ struct FGraphEdge
 	
 	FGraphEdge() = default;
 
+	FGraphEdge(const FGraphEdgeID& InEdgeID)
+		: EdgeID(InEdgeID)
+	{
+		
+	}
+
 	bool IsConnectTo(const FName NodeID) const
 	{
 		return EdgeID.StartNodeID == NodeID || EdgeID.EndNodeID == NodeID;
@@ -144,6 +154,11 @@ struct FUndirectedEdge : public FGraphEdge
 	FUndirectedEdge(const FName& StartNodeID, const FName& EndNodeID)
 	{
 		EdgeID = FGraphEdgeID(StartNodeID, EndNodeID, false);
+	}
+
+	FUndirectedEdge(const FGraphEdgeID& InEdgeID)
+	{
+		EdgeID = FGraphEdgeID(InEdgeID.StartNodeID, InEdgeID.EndNodeID, false);
 	}
 
 	bool operator == (const FGraphEdge& Other) const
@@ -178,6 +193,11 @@ struct FDirectedEdge : public FGraphEdge
 		EdgeID = FGraphEdgeID(InStartNodeID, InEndNodeID, true);
 	}
 
+	FDirectedEdge(const FGraphEdgeID& InEdgeID)
+	{
+		EdgeID = FGraphEdgeID(InEdgeID.StartNodeID, InEdgeID.EndNodeID, true);
+	}
+
 	bool operator == (const FDirectedEdge& Other) const
 	{
 		return EdgeID == Other.EdgeID;
@@ -207,14 +227,20 @@ struct FUndirectedWeightedEdge : public FUndirectedEdge
 	GENERATED_BODY()
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Graph|Edge")
-	float Weight;
+	float Weight = 0.f;
 
 	FUndirectedWeightedEdge() = default;
 
 	FUndirectedWeightedEdge(const FName& InStartNodeID, const FName& InEndNodeID, const float InWeight)
-		: FUndirectedEdge(InStartNodeID, InEndNodeID), Weight(InWeight)
+		: Weight(InWeight)
 	{
-		
+		EdgeID = FGraphEdgeID(InStartNodeID, InEndNodeID, false);
+	}
+
+	FUndirectedWeightedEdge(const FGraphEdgeID& InEdgeID)
+	{
+		EdgeID = FGraphEdgeID(InEdgeID.StartNodeID, InEdgeID.EndNodeID, false);
+		Weight = 1.0f;
 	}
 
 	bool operator == (const FUndirectedWeightedEdge& Other) const
@@ -245,14 +271,20 @@ struct FDirectedWeightedEdge : public FDirectedEdge
 	GENERATED_BODY()
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Graph|Edge")
-	float Weight;
+	float Weight = 0.f;
 	
 	FDirectedWeightedEdge() = default;
 
 	FDirectedWeightedEdge(const FName& InStartNodeID, const FName& InEndNodeID, const float InWeight)
-		: FDirectedEdge(InStartNodeID, InEndNodeID), Weight(InWeight)
+		: Weight(InWeight)
 	{
-		
+		EdgeID = FGraphEdgeID(InStartNodeID, InEndNodeID, true);
+	}
+
+	FDirectedWeightedEdge(const FGraphEdgeID& InEdgeID)
+	{
+		EdgeID = FGraphEdgeID(InEdgeID.StartNodeID, InEdgeID.EndNodeID, true);
+		Weight = 1.0f;
 	}
 
 	bool operator == (const FDirectedWeightedEdge& Other) const
@@ -276,8 +308,21 @@ private:
 	}
 };
 
-////////////////////////////////////////////////////////////////////////////////////////
 
+
+////////////////////////////////////////////////////////////////////////////////////////Custom Node/Edge
+///
+///
+
+USTRUCT(BlueprintType)
+struct FPathNode : public FGraphNode
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Graph|Node")
+	TWeakObjectPtr<AActor> PathNode;
+	
+};
 
 
 

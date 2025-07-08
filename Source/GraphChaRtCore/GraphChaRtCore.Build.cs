@@ -2,9 +2,9 @@
 
 using UnrealBuildTool;
 
-public class GraphChaRt : ModuleRules
+public class GraphChaRtCore : ModuleRules
 {
-	public GraphChaRt(ReadOnlyTargetRules Target) : base(Target)
+	public GraphChaRtCore(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
 		

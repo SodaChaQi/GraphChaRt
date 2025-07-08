@@ -10,7 +10,7 @@
  * 
  */
 UCLASS(Config = GraphChaRt, DefaultConfig)
-class GRAPHCHART_API UGraphChaRtSettings : public UDeveloperSettings
+class GRAPHCHARTCORE_API UGraphChaRtSettings : public UDeveloperSettings
 {
 	GENERATED_BODY()
 

@@ -4,7 +4,7 @@
 
 #include "Modules/ModuleManager.h"
 
-class FGraphChaRtModule : public IModuleInterface
+class FGraphChaRtCoreModule : public IModuleInterface
 {
 public:
 
