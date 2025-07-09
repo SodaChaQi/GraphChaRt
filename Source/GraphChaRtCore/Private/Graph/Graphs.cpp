@@ -4,27 +4,29 @@
 #include "Graph/Graphs.h"
 
 
+DEFINE_LOG_CATEGORY(GraphsLog);
 
 UPathGraph::UPathGraph()
 {
-	Graph = MakeUnique<TGraphImpl<FGraphNode, FDirectedEdge>>();
+	Graph = MakeUnique<TGraphImpl<FPathNode, FPathEdge>>();
 	
 	if (Graph != nullptr)
 	{
 		// TSet<FName> Neighbors;
-		// Neighbors.Add(FName("None")) == ;
+		// Neighbors.Add(FName("None"));
 	}
 }
 
-void UPathGraph::AddNode()
+void UPathGraph::AddNode(const FPathNodeData& InNodeData)
 {
 	if (Graph == nullptr) return;
 
-	const FGraphNode Node = FGraphNode(FGraphNode::NodeGUID());
+	const FName NewNodeID = FGraphNode::NodeGUID();
+	const FPathNode Node = FPathNode(NewNodeID, InNodeData);
 	Graph->AddNode(Node);
 }
 
-bool UPathGraph::GetNode(const FName& NodeID, FGraphNode& OutNode)
+bool UPathGraph::GetNode(const FName& NodeID, FPathNode& OutNode)
 {
 	if (Graph == nullptr) return false;
 
@@ -38,14 +40,14 @@ bool UPathGraph::RemoveNode(const FName& NodeID)
 	return Graph->RemoveNode(NodeID);
 }
 
-bool UPathGraph::AddEdge(const FDirectedEdge& Edge)
+bool UPathGraph::AddEdge(const FPathEdge& Edge)
 {
 	if (Graph == nullptr) return false;
 	
 	return Graph->AddEdge(Edge);
 }
 
-bool UPathGraph::GetEdge(const FGraphEdgeID& NodeID, FDirectedEdge& OutEdge)
+bool UPathGraph::GetEdge(const FGraphEdgeID& NodeID, FPathEdge& OutEdge)
 {
 	if (Graph == nullptr) return false;
 
@@ -59,7 +61,7 @@ bool UPathGraph::RemoveEdge(const FGraphEdgeID& EdgeID)
 	return Graph->RemoveEdge(EdgeID);
 }
 
-TArray<FName> UPathGraph::GetNodeNeighbors(FName NodeID)
+TArray<FName> UPathGraph::GetNodeNeighbors(FName NodeID) const
 {
 	if (Graph == nullptr) return TArray<FName>();
 
@@ -73,31 +75,28 @@ void UPathGraph::PostLoad()
 	BuildAdjacencyList();
 }
 
+void UPathGraph::Serialize(FArchive& Ar)
+{
+	UObject::Serialize(Ar);
+
+	if (Graph == nullptr) return;
+	Graph->Serialize(Ar);
+}
+
 #if WITH_EDITOR
 
 void UPathGraph::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyChangedEvent)
 {
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 
-	// BuildAdjacencyList();
+	MarkPackageDirty();
 }
 
 #endif
 
 void UPathGraph::BuildAdjacencyList()
 {
-	// AdjacencyList.Empty();
-	//
-	// for (const FGraphNodeInfo& Node : Nodes)
-	// {
-	// 	AdjacencyList.Add(Node.NodeID, FNodeNeighbors());
-	// }
-	//
-	// for (const FGraphEdgeInfo& Edge : Edges)
-	// {
-	// 	if (FNodeNeighbors* NodeNeighbors = AdjacencyList.Find(Edge.StartNodeID))
-	// 	{
-	// 		NodeNeighbors->Neighbors.AddUnique(Edge.EndNodeID);
-	// 	}
-	// }
+	if (Graph == nullptr) return;
+
+	Graph->BuildAdjacencyList();
 }

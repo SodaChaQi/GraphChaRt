@@ -28,11 +28,13 @@ struct FGraphEdgeID
 
 	FGraphEdgeID() = default;
 
-	FGraphEdgeID(const FName& InStartID, const FName& InEndID, const bool bIsDirected)
-		: StartNodeID(InStartID), EndNodeID(InEndID), bIsOrderSensitive(bIsDirected)
-	{
-		
-	}
+	FGraphEdgeID(const FName& InStartID, const FName& InEndID, const bool bInIsOrderSensitive)
+		: StartNodeID(InStartID), EndNodeID(InEndID), bIsOrderSensitive(bInIsOrderSensitive)
+	{}
+
+	FGraphEdgeID(const FName& InStartID, const FName& InEndID)
+		: StartNodeID(InStartID), EndNodeID(InEndID)
+	{}
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Graph|Edge")
 	FName StartNodeID;
@@ -57,6 +59,11 @@ struct FGraphEdgeID
 				(StartNodeID == Other.EndNodeID && EndNodeID == Other.StartNodeID);
 	}
 
+	bool operator != (const FGraphEdgeID& Other) const
+	{
+		return !(*this == Other);
+	}
+
 	FGraphEdgeID GetNormalizeEdgeID() const
 	{
 		if (bIsOrderSensitive) return *this;
@@ -68,10 +75,14 @@ struct FGraphEdgeID
 
 	FORCEINLINE bool GetIsOrderSensitive() const { return bIsOrderSensitive; }
 
-	friend struct FGraphEdge;
+	friend FArchive& operator<<(FArchive& Ar, FGraphEdgeID& Element)
+	{
+		Ar << Element.StartNodeID << Element.EndNodeID << Element.bIsOrderSensitive;
+		return Ar;
+	}
 
 protected:
-	bool bIsOrderSensitive;
+	bool bIsOrderSensitive = false;
 
 private:
 
@@ -82,43 +93,40 @@ private:
 	}
 };
 
+////////////////////////////////////////////////////////////////////////////////////////
+///以下USTRUCT都不可实例化，若要使用请按需继承
+///
+///若要继承后实例化结构体：
+///至少实现默认构造函数和隐式转换构造函数
+///需重载 == 与 != 实现查找
+///需实现 GetTypeHash()，以便 Hash 容器寻找对比
+///需重载<<操作符实现序列化
+///
+
 USTRUCT(BlueprintType)
 struct FGraphNode
 {
 	GENERATED_BODY()
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Graph|Node")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Graph|Node")
 	FName NodeID;
 
-	FGraphNode() = default;
+	FGraphNode()
+		: NodeID(NAME_None)
+	{}
 
-	FGraphNode(const FName& NodeID)
-		: NodeID(NodeID)
-	{
-		
-	}
+protected:
+
+	FGraphNode(const FName& InNodeID)
+		: NodeID(InNodeID)
+	{}
+	
+public:
 
 	FORCEINLINE static FName NodeGUID()
 	{
 		return  FName(FString::Printf(
 			TEXT("GRAPH_NODE_%s"), *FGuid::NewGuid().ToString(EGuidFormats::Digits)));
-	}
-	
-	bool operator == (const FGraphNode& Other) const
-	{
-		return NodeID == Other.NodeID;
-	}
-
-	bool operator != (const FGraphNode& Other) const
-	{
-		return !(*this == Other);
-	}
-
-private:
-
-	friend uint32 GetTypeHash(const FGraphNode& Node)
-	{
-		return GetTypeHash(Node.NodeID);
 	}
 };
 
@@ -126,17 +134,23 @@ USTRUCT(BlueprintType)
 struct FGraphEdge
 {
 	GENERATED_BODY()
+
+protected:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Graph|Edge")
 	FGraphEdgeID EdgeID;
-	
-	FGraphEdge() = default;
 
-	FGraphEdge(const FGraphEdgeID& InEdgeID)
-		: EdgeID(InEdgeID)
-	{
-		
-	}
+	FGraphEdge(const FName& InStartID, const FName& InEndID, const bool bInIsOrderSensitive)
+		: EdgeID(InStartID, InEndID, bInIsOrderSensitive)
+	{}
+
+public:
+	
+	FGraphEdge()
+		: EdgeID(NAME_None, NAME_None)
+	{}
+
+	FGraphEdgeID GetID() const { return EdgeID; }
 
 	bool IsConnectTo(const FName NodeID) const
 	{
@@ -149,35 +163,15 @@ struct FUndirectedEdge : public FGraphEdge
 {
 	GENERATED_BODY()
 
-	FUndirectedEdge() = default;
+	FUndirectedEdge()
+		: FGraphEdge(NAME_None, NAME_None, false)
+	{}
 
-	FUndirectedEdge(const FName& StartNodeID, const FName& EndNodeID)
+protected:
+
+	FUndirectedEdge(const FName InStartID, const FName& InEndID)
+		: FGraphEdge(InStartID, InEndID, false)
 	{
-		EdgeID = FGraphEdgeID(StartNodeID, EndNodeID, false);
-	}
-
-	FUndirectedEdge(const FGraphEdgeID& InEdgeID)
-	{
-		EdgeID = FGraphEdgeID(InEdgeID.StartNodeID, InEdgeID.EndNodeID, false);
-	}
-
-	bool operator == (const FGraphEdge& Other) const
-	{
-		return EdgeID == Other.EdgeID;
-	}
-
-	bool operator != (const FGraphEdge& Other) const
-	{
-		return !(*this == Other);
-	}
-
-private:
-
-	friend uint32 GetTypeHash(const FGraphEdge& Edge)
-	{
-		const auto ID = Edge.EdgeID.GetNormalizeEdgeID();
-
-		return GetTypeHash(ID);
 	}
 };
 
@@ -186,39 +180,15 @@ struct FDirectedEdge : public FGraphEdge
 {
 	GENERATED_BODY()
 
-	FDirectedEdge() = default;
+	FDirectedEdge()
+		: FGraphEdge(NAME_None, NAME_None, true)
+	{}
 
-	FDirectedEdge(const FName& InStartNodeID, const FName& InEndNodeID)
-	{
-		EdgeID = FGraphEdgeID(InStartNodeID, InEndNodeID, true);
-	}
-
-	FDirectedEdge(const FGraphEdgeID& InEdgeID)
-	{
-		EdgeID = FGraphEdgeID(InEdgeID.StartNodeID, InEdgeID.EndNodeID, true);
-	}
-
-	bool operator == (const FDirectedEdge& Other) const
-	{
-		return EdgeID == Other.EdgeID;
-	}
-
-	bool operator == (const FGraphEdgeID& Other) const
-	{
-		return EdgeID == Other;
-	}
-
-	bool operator != (const FDirectedEdge& Other) const
-	{
-		return !(*this == Other);
-	}
-
-private:
-
-	friend uint32 GetTypeHash(const FDirectedEdge& Edge)
-	{
-		return GetTypeHash(Edge.EdgeID);
-	}
+protected:
+	
+	FDirectedEdge(const FName& InStartID, const FName& InEndID)
+		: FGraphEdge(InStartID, InEndID, true)
+	{}
 };
 
 USTRUCT(BlueprintType)
@@ -227,42 +197,17 @@ struct FUndirectedWeightedEdge : public FUndirectedEdge
 	GENERATED_BODY()
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Graph|Edge")
-	float Weight = 0.f;
+	float Weight = 1.f;
 
-	FUndirectedWeightedEdge() = default;
+	FUndirectedWeightedEdge()
+		: FUndirectedEdge(NAME_None, NAME_None)
+	{}
 
-	FUndirectedWeightedEdge(const FName& InStartNodeID, const FName& InEndNodeID, const float InWeight)
-		: Weight(InWeight)
-	{
-		EdgeID = FGraphEdgeID(InStartNodeID, InEndNodeID, false);
-	}
+protected:
 
-	FUndirectedWeightedEdge(const FGraphEdgeID& InEdgeID)
-	{
-		EdgeID = FGraphEdgeID(InEdgeID.StartNodeID, InEdgeID.EndNodeID, false);
-		Weight = 1.0f;
-	}
-
-	bool operator == (const FUndirectedWeightedEdge& Other) const
-	{
-		return EdgeID == Other.EdgeID &&
-			FMath::IsNearlyEqual(Weight, Other.Weight);
-	}
-	
-	bool operator != (const FUndirectedWeightedEdge& Other) const
-	{
-		return !(*this == Other);
-	}
-
-private:
-
-	friend uint32 GetTypeHash(const FUndirectedWeightedEdge& Edge)
-	{
-		const auto ID = Edge.EdgeID.GetNormalizeEdgeID();
-		const int32 Quantized = FMath::RoundToInt32(Edge.Weight * 1000.f);
-		
-		return HashCombine(GetTypeHash(ID), GetTypeHash(Quantized));
-	}
+	FUndirectedWeightedEdge(const FName& InStartID, const FName& InEndID, const float& InWeight)
+		: FUndirectedEdge(InStartID, InEndID), Weight(InWeight)
+	{}
 };
 
 USTRUCT(BlueprintType)
@@ -270,59 +215,39 @@ struct FDirectedWeightedEdge : public FDirectedEdge
 {
 	GENERATED_BODY()
 
+	FDirectedWeightedEdge()
+	: FDirectedEdge(NAME_None, NAME_None)
+	{}
+
+	FORCEINLINE void SetWeight(const float InWeight) { FixedWeight = FMath::RoundToInt64(InWeight * FIXED_WEIGHT_SCALE); }
+	FORCEINLINE float GetWeight() const { return static_cast<float>(FixedWeight) / static_cast<float>(FIXED_WEIGHT_SCALE); }
+	FORCEINLINE double GetPreciseWeight() const { return static_cast<double>(FixedWeight) / FIXED_WEIGHT_SCALE; }
+
+protected:
+
+	static constexpr int64 FIXED_WEIGHT_SCALE = 1LL << 16;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Graph|Edge")
-	float Weight = 0.f;
-	
-	FDirectedWeightedEdge() = default;
+	int64 FixedWeight = 1;
 
-	FDirectedWeightedEdge(const FName& InStartNodeID, const FName& InEndNodeID, const float InWeight)
-		: Weight(InWeight)
-	{
-		EdgeID = FGraphEdgeID(InStartNodeID, InEndNodeID, true);
-	}
+	FDirectedWeightedEdge(const FName& InStartID, const FName& InEndID, const float& InWeight)
+		: FDirectedEdge(InStartID, InEndID), FixedWeight(FMath::RoundToInt64(InWeight * FIXED_WEIGHT_SCALE))
+	{}
 
-	FDirectedWeightedEdge(const FGraphEdgeID& InEdgeID)
-	{
-		EdgeID = FGraphEdgeID(InEdgeID.StartNodeID, InEdgeID.EndNodeID, true);
-		Weight = 1.0f;
-	}
-
-	bool operator == (const FDirectedWeightedEdge& Other) const
-	{
-		return EdgeID == Other.EdgeID &&
-				FMath::IsNearlyEqual(Weight, Other.Weight);
-	}
-
-	bool operator != (const FDirectedWeightedEdge& Other) const
-	{
-		return !(*this == Other);
-	}
-
-private:
-
-	friend uint32 GetTypeHash(const FDirectedWeightedEdge& Edge)
-	{
-		const int32 Quantized = FMath::RoundToInt32(Edge.Weight * 1000.f);
-		
-		return HashCombine(GetTypeHash(Edge.EdgeID), GetTypeHash(Quantized));
-	}
+	FDirectedWeightedEdge(const FName& InStartID, const FName& InEndID)
+		: FDirectedEdge(InStartID, InEndID)
+	{}
 };
 
 
 
-////////////////////////////////////////////////////////////////////////////////////////Custom Node/Edge
+////////////////////////////////////////////////////////////////////////////////////////
+///以上USTRUCT都不可实例化，若要使用请按需继承
 ///
+///若要继承后实例化结构体：
+///至少实现默认构造函数和隐式转换构造函数
+///需重载 == 与 != 实现查找
+///需实现 GetTypeHash()，以便 Hash 容器寻找对比
+///需重载<<操作符实现序列化
 ///
-
-USTRUCT(BlueprintType)
-struct FPathNode : public FGraphNode
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Graph|Node")
-	TWeakObjectPtr<AActor> PathNode;
-	
-};
-
-
 

@@ -25,8 +25,12 @@ class TGraphImpl
 	DECLARE_DELEGATE_OneParam(FOnEdgeAdded, const TGraphEdge&);
 	DECLARE_DELEGATE_OneParam(FOnEdgeRemoved, const TGraphEdge&);
 
+protected:
+	
 	TSet<TGraphNode> Nodes;
 	TSet<TGraphEdge> Edges;
+
+	TMap<FName, FNodeNeighbors> AdjacencyList;
 	
 public:
 
@@ -47,11 +51,13 @@ public:
 
 	const TArray<FName>& GetNodeNeighbors(FName NodeID);
 
-protected:
-
-	TMap<FName, FNodeNeighbors> AdjacencyList;
+	void BuildAdjacencyList();
 
 	FORCEINLINE const TMap<FName, FNodeNeighbors>& GetAdjacencyList() { return AdjacencyList; }
+
+
+	void Serialize(FArchive& Ar);
+	
 };
 
 
@@ -103,17 +109,17 @@ bool TGraphImpl<TGraphNode, TGraphEdge, T0, T1>::RemoveNode(const FName& NodeID)
 template <typename TGraphNode, typename TGraphEdge, typename T0, typename T1>
 bool TGraphImpl<TGraphNode, TGraphEdge, T0, T1>::AddEdge(const TGraphEdge& Edge)
 {
-	if (Nodes.Contains(Edge.EdgeID.StartNodeID) && Nodes.Contains(Edge.EdgeID.EndNodeID) && Edges.Add(Edge).IsValidId())
+	if (Nodes.Contains(Edge.GetID().StartNodeID) && Nodes.Contains(Edge.GetID().EndNodeID) && Edges.Add(Edge).IsValidId())
 	{
-		if (const auto NodeNeighbors = AdjacencyList.Find(Edge.EdgeID.StartNodeID))
+		if (const auto NodeNeighbors = AdjacencyList.Find(Edge.GetID().StartNodeID))
 		{
-			NodeNeighbors->Neighbors.AddUnique(Edge.EdgeID.EndNodeID);
+			NodeNeighbors->Neighbors.AddUnique(Edge.GetID().EndNodeID);
 		}
-		if (!Edge.EdgeID.GetIsOrderSensitive())
+		if (!Edge.GetID().GetIsOrderSensitive())
 		{
-			if (const auto NodeNeighbors = AdjacencyList.Find(Edge.EdgeID.EndNodeID))
+			if (const auto NodeNeighbors = AdjacencyList.Find(Edge.GetID().EndNodeID))
 			{
-				NodeNeighbors->Neighbors.AddUnique(Edge.EdgeID.StartNodeID);
+				NodeNeighbors->Neighbors.AddUnique(Edge.GetID().StartNodeID);
 			}
 		}
 		OnEdgeAdded.ExecuteIfBound(Edge);
@@ -142,17 +148,17 @@ bool TGraphImpl<TGraphNode, TGraphEdge, T0, T1>::RemoveEdge(const FGraphEdgeID& 
 		Edges.Remove(EdgeCopy);      // 高效移除边
         
 		// 更新邻接表
-		if (auto* StartNeighbors = AdjacencyList.Find(EdgeCopy.EdgeID.StartNodeID))
+		if (auto* StartNeighbors = AdjacencyList.Find(EdgeCopy.GetID().StartNodeID))
 		{
-			StartNeighbors->Neighbors.Remove(EdgeCopy.EdgeID.EndNodeID);
+			StartNeighbors->Neighbors.Remove(EdgeCopy.GetID().EndNodeID);
 		}
         
 		// 如果是无向边，更新反向连接
-		if (!EdgeCopy.EdgeID.GetIsOrderSensitive())
+		if (!EdgeCopy.GetID().GetIsOrderSensitive())
 		{
-			if (auto* EndNeighbors = AdjacencyList.Find(EdgeCopy.EdgeID.EndNodeID))
+			if (auto* EndNeighbors = AdjacencyList.Find(EdgeCopy.GetID().EndNodeID))
 			{
-				EndNeighbors->Neighbors.Remove(EdgeCopy.EdgeID.StartNodeID);
+				EndNeighbors->Neighbors.Remove(EdgeCopy.GetID().StartNodeID);
 			}
 		}
         
@@ -174,5 +180,38 @@ const TArray<FName>& TGraphImpl<TGraphNode, TGraphEdge, T0, T1>::GetNodeNeighbor
 
 	static TArray<FName> EmptyArray;
 	return EmptyArray;
+}
+
+template <typename TGraphNode, typename TGraphEdge, typename T0, typename T1>
+void TGraphImpl<TGraphNode, TGraphEdge, T0, T1>::BuildAdjacencyList()
+{
+	AdjacencyList.Empty();
+	
+	for (const TGraphNode& Node : Nodes)
+	{
+		AdjacencyList.Add(Node.NodeID, FNodeNeighbors());
+	}
+	
+	for (const TGraphEdge& Edge : Edges)
+	{
+		if (FNodeNeighbors* NodeNeighbors = AdjacencyList.Find(Edge.GetID().StartNodeID))
+		{
+			NodeNeighbors->Neighbors.AddUnique(Edge.GetID().EndNodeID);
+		}
+		if (!Edge.GetID().GetIsOrderSensitive())
+		{
+			if (FNodeNeighbors* NodeNeighbors = AdjacencyList.Find(Edge.GetID().EndNodeID))
+			{
+				NodeNeighbors->Neighbors.AddUnique(Edge.GetID().StartNodeID);
+			}
+		}
+	}
+}
+
+template <typename TGraphNode, typename TGraphEdge, typename T0, typename T1>
+void TGraphImpl<TGraphNode, TGraphEdge, T0, T1>::Serialize(FArchive& Ar)
+{
+	Ar << Nodes;
+	Ar << Edges;
 }
 

@@ -1,6 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "GraphChaRtEditor.h"
+
 #include "GraphChaRtEditorStyle.h"
 #include "GraphChaRtEditorCommands.h"
 #include "LevelEditor.h"
@@ -16,6 +17,8 @@ static const FName GraphChaRtEditorTabName("GraphChaRtEditor");
 void FGraphChaRtEditorModule::StartupModule()
 {
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
+
+	// UE_LOG(LogTemp, Warning, TEXT("GraphChaRtEditor Loaded!"));
 	
 	FGraphChaRtEditorStyle::Initialize();
 	FGraphChaRtEditorStyle::ReloadTextures();
@@ -34,6 +37,10 @@ void FGraphChaRtEditorModule::StartupModule()
 	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(GraphChaRtEditorTabName, FOnSpawnTab::CreateRaw(this, &FGraphChaRtEditorModule::OnSpawnPluginTab))
 		.SetDisplayName(LOCTEXT("FGraphChaRtEditorTabTitle", "GraphChaRtEditor"))
 		.SetMenuType(ETabSpawnerMenuType::Hidden);
+
+	// 注册资产类型到 AssetTools
+	// IAssetTools& AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
+	// AssetTools.RegisterAssetTypeActions(MakeShareable(new FGraphChaRtAssetTypeActions));
 }
 
 void FGraphChaRtEditorModule::ShutdownModule()
@@ -93,9 +100,9 @@ void FGraphChaRtEditorModule::RegisterMenus()
 	}
 
 	{
-		UToolMenu* ToolbarMenu = UToolMenus::Get()->ExtendMenu("LevelEditor.LevelEditorToolBar");
+		UToolMenu* ToolbarMenu = UToolMenus::Get()->ExtendMenu("LevelEditor.LevelEditorToolBar.PlayToolBar");
 		{
-			FToolMenuSection& Section = ToolbarMenu->FindOrAddSection("Settings");
+			FToolMenuSection& Section = ToolbarMenu->FindOrAddSection("PluginTools");
 			{
 				FToolMenuEntry& Entry = Section.AddEntry(FToolMenuEntry::InitToolBarButton(FGraphChaRtEditorCommands::Get().OpenPluginWindow));
 				Entry.SetCommandList(PluginCommands);
