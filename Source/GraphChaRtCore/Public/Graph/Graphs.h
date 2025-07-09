@@ -20,14 +20,14 @@ struct FPathNodeData
 	GENERATED_BODY()
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Graph|Node")
-	TSoftObjectPtr<ULevel> LevelContext = nullptr;
+	FName NodeName;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Graph|Node")
 	FTransform WorldTransform = FTransform::Identity;
 
 	friend FArchive& operator<<(FArchive& Ar, FPathNodeData& NodeData)
 	{
-		Ar << NodeData.LevelContext;
+		Ar << NodeData.NodeName;
 		Ar << NodeData.WorldTransform;
 		return Ar;
 	}
@@ -137,6 +137,9 @@ class GRAPHCHARTCORE_API UPathGraph : public UObject
 public:
 
 	UPathGraph();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Graph|Path")
+	TSoftObjectPtr<ULevel> LevelContext;
 
 	UFUNCTION(BlueprintCallable, Category = "Graph")
 	void AddNode(const FPathNodeData& InNodeData);

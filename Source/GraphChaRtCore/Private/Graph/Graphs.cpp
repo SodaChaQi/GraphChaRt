@@ -7,6 +7,7 @@
 DEFINE_LOG_CATEGORY(GraphsLog);
 
 UPathGraph::UPathGraph()
+	: LevelContext(nullptr)
 {
 	Graph = MakeUnique<TGraphImpl<FPathNode, FPathEdge>>();
 	
