@@ -4,6 +4,8 @@
 #include "GraphEditor/EditorPathNode.h"
 
 
+
+
 AEditorPathNode::AEditorPathNode()
 	: NodeName(NAME_None)
 {
@@ -21,6 +23,33 @@ AEditorPathNode::AEditorPathNode()
 	}
 
 }
+
+#if WITH_EDITOR
+
+void AEditorPathNode::PostActorCreated()
+{
+	Super::PostActorCreated();
+
+	if (GetWorld() && GetWorld()->WorldType != EWorldType::EditorPreview)
+	{
+		// if (UGraphEditorSubsystem* GraphEditorSubsystem = GEditor->GetEditorSubsystem<UGraphEditorSubsystem>())
+		// {
+		// 	
+		// }
+	}
+}
+
+void AEditorPathNode::PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent)
+{
+	Super::PostEditChangeProperty(PropertyChangedEvent);
+}
+
+void AEditorPathNode::PostEditMove(bool bFinished)
+{
+	Super::PostEditMove(bFinished);
+}
+
+#endif
 
 void AEditorPathNode::BeginPlay()
 {

@@ -26,7 +26,8 @@ public class GraphChaRtEditor : ModuleRules
 			new string[]
 			{
 				"Core",
-				"GraphChaRtCore",
+				"GraphChaRtCore", 
+				"AssetTools",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -44,6 +45,7 @@ public class GraphChaRtEditor : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
+				"AssetManagerEditor",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

@@ -55,6 +55,9 @@ public:
 
 	FORCEINLINE const TMap<FName, FNodeNeighbors>& GetAdjacencyList() { return AdjacencyList; }
 
+	TSet<TGraphNode> GetNodes() const { return Nodes; }
+	TSet<TGraphEdge> GetEdges() const { return Edges; }
+
 
 	void Serialize(FArchive& Ar);
 	

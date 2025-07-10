@@ -2,6 +2,7 @@
 
 #include "GraphChaRtEditor.h"
 
+#include "AssetToolsModule.h"
 #include "GraphChaRtEditorStyle.h"
 #include "GraphChaRtEditorCommands.h"
 #include "LevelEditor.h"
@@ -9,6 +10,9 @@
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/Text/STextBlock.h"
 #include "ToolMenus.h"
+#include "GraphEditor/PathGraphAssetFactory.h"
+
+
 
 static const FName GraphChaRtEditorTabName("GraphChaRtEditor");
 
@@ -17,8 +21,6 @@ static const FName GraphChaRtEditorTabName("GraphChaRtEditor");
 void FGraphChaRtEditorModule::StartupModule()
 {
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
-
-	// UE_LOG(LogTemp, Warning, TEXT("GraphChaRtEditor Loaded!"));
 	
 	FGraphChaRtEditorStyle::Initialize();
 	FGraphChaRtEditorStyle::ReloadTextures();
@@ -39,8 +41,15 @@ void FGraphChaRtEditorModule::StartupModule()
 		.SetMenuType(ETabSpawnerMenuType::Hidden);
 
 	// 注册资产类型到 AssetTools
-	// IAssetTools& AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
-	// AssetTools.RegisterAssetTypeActions(MakeShareable(new FGraphChaRtAssetTypeActions));
+	IAssetTools& AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
+
+	UPathGraphAssetFactory* Factory = NewObject<UPathGraphAssetFactory>();
+	Factory->AddToRoot();
+	
+	TSharedRef<IAssetTypeActions> Action = MakeShareable(new FPathGraphAssetTypeActions());
+	AssetTools.RegisterAssetTypeActions(Action);
+
+	RegisteredAssetTypeActions.Add(Action);
 }
 
 void FGraphChaRtEditorModule::ShutdownModule()
@@ -57,6 +66,18 @@ void FGraphChaRtEditorModule::ShutdownModule()
 	FGraphChaRtEditorCommands::Unregister();
 
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(GraphChaRtEditorTabName);
+
+	//取消注册资产
+	if (FModuleManager::Get().IsModuleLoaded("AssetTools"))
+	{
+		IAssetTools& AssetTools = FModuleManager::GetModuleChecked<FAssetToolsModule>("AssetTools").Get();
+
+		for (auto& Action : RegisteredAssetTypeActions)
+		{
+			AssetTools.UnregisterAssetTypeActions(Action);
+		}
+	}
+	RegisteredAssetTypeActions.Empty();
 }
 
 TSharedRef<SDockTab> FGraphChaRtEditorModule::OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs)

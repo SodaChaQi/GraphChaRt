@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "IAssetTypeActions.h"
 #include "Modules/ModuleManager.h"
 
 class FToolBarBuilder;
@@ -23,7 +24,9 @@ private:
 	void RegisterMenus();
 
 	TSharedRef<class SDockTab> OnSpawnPluginTab(const class FSpawnTabArgs& SpawnTabArgs);
-
-private:
+	
 	TSharedPtr<class FUICommandList> PluginCommands;
+
+	TArray<TSharedRef<IAssetTypeActions>> RegisteredAssetTypeActions;
+
 };

@@ -18,11 +18,21 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Graph|Editor")
 	FName NodeName;
 
+	
+#if WITH_EDITOR
+	
+	virtual void PostActorCreated() override;
+	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
+	virtual void PostEditMove(bool bFinished) override;
+	
+#endif
+
+
 protected:
 
 	virtual void BeginPlay() override;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "PathNodeEditor")
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Graph|Editor")
 	UStaticMeshComponent* PreviewMesh;
 	
 };

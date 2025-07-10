@@ -138,6 +138,11 @@ public:
 
 	UPathGraph();
 
+	UPathGraph(const FName& InPathGraphID, const TSoftObjectPtr<ULevel>& InLevelContext);
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Graph|Node")
+	FName PathGraphID;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Graph|Path")
 	TSoftObjectPtr<ULevel> LevelContext;
 
@@ -177,5 +182,9 @@ protected:
 	TUniquePtr<TGraphImpl<FPathNode, FPathEdge>> Graph;
 
 	void BuildAdjacencyList();
+
+public:
+
+	FORCEINLINE TSet<FPathNode> GetPathNodes() const { if (Graph == nullptr) return TSet<FPathNode>(); return Graph->GetNodes(); }
 	
 };

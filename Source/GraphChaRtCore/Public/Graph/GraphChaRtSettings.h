@@ -9,6 +9,19 @@
 /**
  * 
  */
+
+class UPathGraph;
+
+USTRUCT(BlueprintType)
+struct FPathGraphPaths
+{
+	GENERATED_BODY()
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "GraphSettings")
+	TSet<FName> PathGraphPaths;
+};
+
+
 UCLASS(Config = GraphChaRt, DefaultConfig)
 class GRAPHCHARTCORE_API UGraphChaRtSettings : public UDeveloperSettings
 {
@@ -27,6 +40,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GraphSettings")
 	FString GraphAssetPath = FPaths::EnginePluginsDir() + TEXT("GraphChaRt/Content");
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "GraphSettings")
+	TMap<FName, FPathGraphPaths> LevelPathGraphPaths;
 
 	
 };

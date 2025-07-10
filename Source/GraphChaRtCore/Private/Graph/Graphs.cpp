@@ -18,6 +18,11 @@ UPathGraph::UPathGraph()
 	}
 }
 
+UPathGraph::UPathGraph(const FName& InPathGraphID, const TSoftObjectPtr<ULevel>& InLevelContext)
+	: PathGraphID(InPathGraphID), LevelContext(InLevelContext)
+{
+}
+
 void UPathGraph::AddNode(const FPathNodeData& InNodeData)
 {
 	if (Graph == nullptr) return;

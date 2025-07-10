@@ -3,7 +3,6 @@
 #include "GraphChaRtEditorStyle.h"
 #include "Styling/SlateStyleRegistry.h"
 #include "Framework/Application/SlateApplication.h"
-#include "Slate/SlateGameResources.h"
 #include "Interfaces/IPluginManager.h"
 #include "Styling/SlateStyleMacros.h"
 
@@ -42,6 +41,7 @@ TSharedRef< FSlateStyleSet > FGraphChaRtEditorStyle::Create()
 	Style->SetContentRoot(IPluginManager::Get().FindPlugin("GraphChaRt")->GetBaseDir() / TEXT("Resources"));
 
 	Style->Set("GraphChaRtEditor.OpenPluginWindow", new IMAGE_BRUSH_SVG(TEXT("PlaceholderButtonIcon"), Icon20x20));
+	Style->Set("ClassIcon.PathGraph", new IMAGE_BRUSH_SVG(TEXT("PathGraph"), Icon20x20));
 
 	return Style;
 }
