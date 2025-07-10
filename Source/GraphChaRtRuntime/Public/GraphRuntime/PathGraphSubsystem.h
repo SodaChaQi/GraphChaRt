@@ -10,6 +10,16 @@ class UPathGraph;
 /**
  * 
  */
+
+USTRUCT()
+struct FPathGraphs
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+	TSet<UPathGraph*> Graphs;
+};
+
 UCLASS()
 class GRAPHCHARTRUNTIME_API UPathGraphSubsystem : public UWorldSubsystem
 {
@@ -24,7 +34,7 @@ public:
 private:
 
 	UPROPERTY()
-	TSet<UPathGraph*> PathGraphs;
+	TMap<ULevel*, FPathGraphs> PathGraphs;
 	
 	void OnLevelLoaded(ULevel* Level, UWorld* World);
 	void OnLevelUnloaded(ULevel* Level, UWorld* World);

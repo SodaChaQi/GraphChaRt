@@ -10,7 +10,6 @@
  * 
  */
 
-class UPathGraph;
 
 USTRUCT(BlueprintType)
 struct FPathGraphPaths

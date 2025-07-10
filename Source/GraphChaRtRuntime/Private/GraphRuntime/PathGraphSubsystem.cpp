@@ -4,6 +4,8 @@
 #include "GraphRuntime/PathGraphSubsystem.h"
 
 #include "Graph/GraphChaRtSettings.h"
+#include "Graph/Graphs.h"
+
 
 bool UPathGraphSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 {
@@ -24,9 +26,9 @@ bool UPathGraphSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 #endif
 
 		const UGraphChaRtSettings* GraphChaRtSettings = GetDefault<UGraphChaRtSettings>();
-		for (const auto& Level : World->GetStreamingLevels())
+		for (const auto& LevelStreaming : World->GetStreamingLevels())
 		{
-			if (GraphChaRtSettings->LevelPathGraphPaths.Find(Level->GetOutermost()->GetFName()))
+			if (GraphChaRtSettings->LevelPathGraphPaths.Find(LevelStreaming->GetOutermost()->GetFName()))
 			{
 				return  true;
 			}
@@ -63,7 +65,7 @@ void UPathGraphSubsystem::OnLevelLoaded(ULevel* Level, UWorld* World)
 			
 			if (UPathGraph* PathGraph = SoftPathGraph.LoadSynchronous())
 			{
-				PathGraphs.Add(PathGraph);
+				PathGraphs.FindOrAdd(Level).Graphs.Add(PathGraph);
 			}
 		}
 	}
@@ -71,8 +73,8 @@ void UPathGraphSubsystem::OnLevelLoaded(ULevel* Level, UWorld* World)
 
 void UPathGraphSubsystem::OnLevelUnloaded(ULevel* Level, UWorld* World)
 {
-	if (Level->GetOutermost()->GetFName() == TEXT(""))
+	if (GetDefault<UGraphChaRtSettings>()->LevelPathGraphPaths.Find(Level->GetOutermost()->GetFName()))
 	{
-		
+		PathGraphs.Remove(Level);
 	}
 }
