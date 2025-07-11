@@ -2,3 +2,9 @@
 
 
 #include "Graph/GraphChaRtSettings.h"
+#include "UObject/ObjectSaveContext.h"
+
+void UGraphChaRtSettings::PostSaveRoot(FObjectPostSaveRootContext ObjectSaveContext)
+{
+	
+}

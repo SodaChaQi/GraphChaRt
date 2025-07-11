@@ -3,11 +3,19 @@
 
 #include "Graph/Graphs.h"
 
+#include "Graph/GraphChaRtSettings.h"
+#include "UObject/ObjectSaveContext.h"
 
 DEFINE_LOG_CATEGORY(GraphsLog);
 
+UPathGraphSchema::UPathGraphSchema(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
+{
+}
+
 UPathGraph::UPathGraph()
 	: LevelContext(nullptr)
+	, EdGraph(nullptr)
 {
 	Graph = MakeUnique<TGraphImpl<FPathNode, FPathEdge>>();
 	
@@ -19,7 +27,7 @@ UPathGraph::UPathGraph()
 }
 
 UPathGraph::UPathGraph(const FName& InPathGraphID, const TSoftObjectPtr<ULevel>& InLevelContext)
-	: PathGraphID(InPathGraphID), LevelContext(InLevelContext)
+	: PathGraphID(InPathGraphID), LevelContext(InLevelContext), EdGraph(nullptr)
 {
 }
 
@@ -96,6 +104,33 @@ void UPathGraph::PostEditChangeProperty(struct FPropertyChangedEvent& PropertyCh
 	Super::PostEditChangeProperty(PropertyChangedEvent);
 
 	MarkPackageDirty();
+}
+
+void UPathGraph::PreSave(FObjectPreSaveContext SaveContext)
+{
+	UObject::PreSave(SaveContext);
+}
+
+void UPathGraph::PostSaveRoot(FObjectPostSaveRootContext ObjectSaveContext)
+{
+	UGraphChaRtSettings* GraphChaRtSettings = GetMutableDefault<UGraphChaRtSettings>();
+
+	if (FPathGraphPaths* PathGraphPaths = GraphChaRtSettings->LevelPathGraphPaths.Find(LevelContext.ToSoftObjectPath()))
+	{
+		if (!PathGraphPaths->PathGraphPaths.Contains(this))
+		{
+			PathGraphPaths->PathGraphPaths.Add(this);
+		}
+	}
+	else
+	{
+		GraphChaRtSettings->LevelPathGraphPaths.Add(LevelContext.ToSoftObjectPath(), FPathGraphPaths(TSet<FSoftObjectPath> { this }));
+	}
+
+	GraphChaRtSettings->SaveConfig(CPF_Config, *GraphChaRtSettings->GetDefaultConfigFilename());
+	GraphChaRtSettings->PostEditChange();
+
+	UE_LOG(LogTemp, Log, TEXT("GraphChaRt Settings updated and saved"));
 }
 
 #endif

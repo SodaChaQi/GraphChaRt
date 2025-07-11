@@ -3,6 +3,12 @@
 
 #include "GraphEditor/PathGraphAssetFactory.h"
 
+#include "EditorCommands/PathGraphEditorCommands.h"
+#include "GraphEditor/SPathGraphEditor.h"
+
+const FName FPathGraphAssetEditorToolkit::GraphCanvasTabID = FName("PathGraphEditor_GraphCanvas");
+const FName FPathGraphAssetEditorToolkit::DetailsTabID("PathGraphEditor_Details");
+const FName FPathGraphAssetEditorToolkit::GraphViewTabID("PathGraphEditor_GraphView");
 
 
 void FPathGraphAssetTypeActions::OpenAssetEditor(const TArray<UObject*>& InObjects,
@@ -37,17 +43,43 @@ void FPathGraphAssetEditorToolkit::InitPathGraphAssetEditor(const EToolkitMode::
 	const TSharedPtr<IToolkitHost>& InitToolkitHost, UPathGraph* InAsset)
 {
 	EditedPathGraph = InAsset;
+
 	EditedObjects = { EditedPathGraph };
 
-	const TSharedRef<FTabManager::FLayout> StandaloneLayout = FTabManager::NewLayout("Standalone_PathGraphEditorLayout_v1")
+	const TSharedRef<FTabManager::FLayout> PathGraphEditorLayout = FTabManager::NewLayout("PathGraphEditorLayout")
 	->AddArea
 	(
 		FTabManager::NewPrimaryArea()
-		->SetOrientation(Orient_Horizontal)
-		->Split(
+		->Split
+		(
+			FTabManager::NewSplitter()
+			->SetOrientation(Orient_Horizontal)
+			->Split
+			(
 			FTabManager::NewStack()
-			->AddTab(PathGraphMainTabID, ETabState::OpenedTab)
-			->SetHideTabWell(true)
+					->SetSizeCoefficient(0.7f)
+					->AddTab(GraphCanvasTabID, ETabState::OpenedTab)
+			)
+			->Split
+			(
+				FTabManager::NewSplitter()
+				->SetOrientation(Orient_Vertical)
+				->SetSizeCoefficient(0.3f)
+				->Split
+				(
+					FTabManager::NewStack()
+					->SetSizeCoefficient(0.6f)
+					->AddTab(DetailsTabID, ETabState::OpenedTab)
+				)
+				->Split
+				(
+					FTabManager::NewStack()
+					->SetSizeCoefficient(0.4f)
+					->AddTab(GraphViewTabID, ETabState::OpenedTab)
+
+				)
+
+			)
 		)
 	);
 
@@ -56,7 +88,7 @@ void FPathGraphAssetEditorToolkit::InitPathGraphAssetEditor(const EToolkitMode::
 		Mode,
 		InitToolkitHost,
 		FName("PathGraphEditorApp"),
-		StandaloneLayout,
+		PathGraphEditorLayout,
 		true,
 		true,
 		InAsset,
@@ -70,37 +102,92 @@ void FPathGraphAssetEditorToolkit::RegisterTabSpawners(const TSharedRef<FTabMana
 {
 	FAssetEditorToolkit::RegisterTabSpawners(InTabManager);
 
-	InTabManager->RegisterTabSpawner(PathGraphMainTabID, FOnSpawnTab::CreateSP(this, &FPathGraphAssetEditorToolkit::SpawnPathGraphMainTab))
-	.SetDisplayName(NSLOCTEXT("PathGraphEditor", "MainTab", "Path Graph"))
-	.SetGroup(WorkspaceMenuCategory.ToSharedRef());
+	InTabManager->RegisterTabSpawner(GraphCanvasTabID, FOnSpawnTab::CreateSP(this, &FPathGraphAssetEditorToolkit::SpawnTab_GraphCanvas))
+	.SetDisplayName(NSLOCTEXT("PathGraphEditor", "GraphCanvasTab", "Graph Canvas"));
+
+	InTabManager->RegisterTabSpawner(GraphViewTabID, FOnSpawnTab::CreateSP(this, &FPathGraphAssetEditorToolkit::SpawnTab_GraphView))
+	.SetDisplayName(NSLOCTEXT("PathGraphEditor", "GraphViewTab", "Graph View"));
+	
+	InTabManager->RegisterTabSpawner(DetailsTabID, FOnSpawnTab::CreateSP(this, &FPathGraphAssetEditorToolkit::SpawnTab_Details))
+	.SetDisplayName(NSLOCTEXT("PathGraphEditor", "GraphDetailsTab", "Details"));
+
+	
+	// .SetGroup(WorkspaceMenuCategory.ToSharedRef());
 }
 
-TSharedRef<SDockTab> FPathGraphAssetEditorToolkit::SpawnPathGraphMainTab(const FSpawnTabArgs& Args)
+void FPathGraphAssetEditorToolkit::BindCommands()
 {
+	const FPathGraphEditorCommands& Commands = FPathGraphEditorCommands::Get();
+    
+	ToolkitCommands->MapAction(
+		Commands.SaveGraph,
+		FExecuteAction::CreateSP(this, &FPathGraphAssetEditorToolkit::SaveGraph),
+		FCanExecuteAction::CreateSP(this, &FPathGraphAssetEditorToolkit::CanSaveGraph)
+	);
+    
+	ToolkitCommands->MapAction(
+		Commands.AddNode,
+		FExecuteAction::CreateSP(this, &FPathGraphAssetEditorToolkit::AddNode),
+		FCanExecuteAction::CreateSP(this, &FPathGraphAssetEditorToolkit::CanAddNode)
+	);
+    
+	ToolkitCommands->MapAction(
+		Commands.DeleteSelectedNodes,
+		FExecuteAction::CreateSP(this, &FPathGraphAssetEditorToolkit::DeleteSelectedNodes),
+		FCanExecuteAction::CreateSP(this, &FPathGraphAssetEditorToolkit::CanDeleteNodes)
+	);
+}
+
+void FPathGraphAssetEditorToolkit::SaveGraph()
+{
+}
+
+bool FPathGraphAssetEditorToolkit::CanSaveGraph()
+{
+	return true;
+}
+
+void FPathGraphAssetEditorToolkit::AddNode()
+{
+}
+
+bool FPathGraphAssetEditorToolkit::CanAddNode()
+{
+	return true;
+}
+
+void FPathGraphAssetEditorToolkit::DeleteSelectedNodes()
+{
+}
+
+bool FPathGraphAssetEditorToolkit::CanDeleteNodes()
+{
+	return true;
+}
+
+TSharedRef<SDockTab> FPathGraphAssetEditorToolkit::SpawnTab_GraphCanvas(const FSpawnTabArgs& Args)
+{
+	check(IsValid(EditedPathGraph));
+	
 	return SNew(SDockTab)
 		.TabRole(NomadTab)
-	[
-		SNew(SVerticalBox)
-		+ SVerticalBox::Slot().AutoHeight()
 		[
-			SNew(STextBlock).Text(FText::FromString(TEXT("Path Graph Editor")))
-		]
-		+ SVerticalBox::Slot()
-		[
-			SNew(SScrollBox)
-			+ SScrollBox::Slot()
-			[
-				SNew(STextBlock)
-				.Text_Lambda([this]()
-				{
-					return FText::FromString(FString::Printf(TEXT("节点数: %d"), EditedPathGraph->GetPathNodes().Num()));
-				})
-			]
-		]
-		
-	];
+		SNew(SPathGraphEditor)
+		.EditedPathGraph(EditedPathGraph)
+				
+		];
 }
 
+TSharedRef<SDockTab> FPathGraphAssetEditorToolkit::SpawnTab_Details(const FSpawnTabArgs& Args)
+{
+	return SNew(SDockTab);
+
+}
+
+TSharedRef<SDockTab> FPathGraphAssetEditorToolkit::SpawnTab_GraphView(const FSpawnTabArgs& Args)
+{
+	return SNew(SDockTab);
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////////////

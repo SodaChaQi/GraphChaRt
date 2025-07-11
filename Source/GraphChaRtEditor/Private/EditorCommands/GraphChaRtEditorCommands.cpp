@@ -1,6 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "GraphChaRtEditorCommands.h"
+#include "EditorCommands/GraphChaRtEditorCommands.h"
 
 #define LOCTEXT_NAMESPACE "FGraphChaRtEditorModule"
 

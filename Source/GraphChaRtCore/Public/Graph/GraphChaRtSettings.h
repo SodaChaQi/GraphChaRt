@@ -17,7 +17,7 @@ struct FPathGraphPaths
 	GENERATED_BODY()
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "GraphSettings")
-	TSet<FName> PathGraphPaths;
+	TSet<FSoftObjectPath> PathGraphPaths;
 };
 
 
@@ -40,8 +40,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GraphSettings")
 	FString GraphAssetPath = FPaths::EnginePluginsDir() + TEXT("GraphChaRt/Content");
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "GraphSettings")
-	TMap<FName, FPathGraphPaths> LevelPathGraphPaths;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GraphSettings")
+	TMap<FSoftObjectPath, FPathGraphPaths> LevelPathGraphPaths;
 
-	
+	virtual void PostSaveRoot(FObjectPostSaveRootContext ObjectSaveContext) override;
 };

@@ -3,6 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "GraphImpls.h"
+#include "EdGraph/EdGraphSchema.h"
 
 #include "Graphs.generated.h"
 
@@ -129,6 +130,24 @@ private:
 	}
 };
 
+
+UCLASS()
+class UPathGraphSchema : public UEdGraphSchema
+{
+	GENERATED_BODY()
+
+public:
+
+	UPathGraphSchema(const FObjectInitializer& ObjectInitializer);
+	
+	virtual void GetGraphContextActions(FGraphContextMenuBuilder& ContextMenuBuilder) const override {}
+	virtual const FPinConnectionResponse CanCreateConnection(const UEdGraphPin* A, const UEdGraphPin* B) const override
+	{
+		return FPinConnectionResponse(CONNECT_RESPONSE_MAKE, TEXT(""));
+	}
+};
+
+
 UCLASS(BlueprintType)
 class GRAPHCHARTCORE_API UPathGraph : public UObject
 {
@@ -171,11 +190,27 @@ public:
 
 	virtual void Serialize(FArchive& Ar) override;
 
+
 #if WITH_EDITOR
 
 	virtual void PostEditChangeProperty(FPropertyChangedEvent& PropertyChangedEvent) override;
 
+	virtual void PreSave(FObjectPreSaveContext SaveContext) override;
+
+	virtual void PostSaveRoot(FObjectPostSaveRootContext ObjectSaveContext) override;
+
+	UFUNCTION()
+	UEdGraph* GetEdGraph() const { return EdGraph; }
+
 #endif
+
+#if WITH_EDITORONLY_DATA
+
+	UPROPERTY()
+	UEdGraph* EdGraph;
+
+#endif
+	
 
 protected:
 

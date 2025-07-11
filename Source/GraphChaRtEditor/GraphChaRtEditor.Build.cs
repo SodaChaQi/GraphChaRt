@@ -45,7 +45,7 @@ public class GraphChaRtEditor : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
-				"AssetManagerEditor",
+				"GraphEditor",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

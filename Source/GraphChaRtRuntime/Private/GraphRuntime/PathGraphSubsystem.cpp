@@ -26,9 +26,13 @@ bool UPathGraphSubsystem::ShouldCreateSubsystem(UObject* Outer) const
 #endif
 
 		const UGraphChaRtSettings* GraphChaRtSettings = GetDefault<UGraphChaRtSettings>();
+
+		if (GraphChaRtSettings->LevelPathGraphPaths.Contains(World->PersistentLevel->GetOutermost()))
+			return true;
+		
 		for (const auto& LevelStreaming : World->GetStreamingLevels())
 		{
-			if (GraphChaRtSettings->LevelPathGraphPaths.Find(LevelStreaming->GetOutermost()->GetFName()))
+			if (GraphChaRtSettings->LevelPathGraphPaths.Find(LevelStreaming->GetWorldAssetPackageName()))
 			{
 				return  true;
 			}
@@ -49,19 +53,20 @@ void UPathGraphSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 void UPathGraphSubsystem::Deinitialize()
 {
+	FWorldDelegates::LevelAddedToWorld.RemoveAll(this);
+	FWorldDelegates::LevelRemovedFromWorld.RemoveAll(this);
+	PathGraphs.Empty();
+
 	Super::Deinitialize();
-	
 }
 
 void UPathGraphSubsystem::OnLevelLoaded(ULevel* Level, UWorld* World)
 {
-	if (const FPathGraphPaths* PathGraphPaths = GetDefault<UGraphChaRtSettings>()->LevelPathGraphPaths.Find(Level->GetOutermost()->GetFName()))
+	if (const FPathGraphPaths* PathGraphPaths = GetDefault<UGraphChaRtSettings>()->LevelPathGraphPaths.Find(Level))
 	{
-		for (const auto& PathGraphPath : PathGraphPaths->PathGraphPaths)
+		for (const FSoftObjectPath& PathGraphPath : PathGraphPaths->PathGraphPaths)
 		{
-			//加载UPathGraph
-			//PathGraphs.Add()
-			TSoftObjectPtr<UPathGraph> SoftPathGraph(PathGraphPath.ToString());
+			TSoftObjectPtr<UPathGraph> SoftPathGraph(PathGraphPath);
 			
 			if (UPathGraph* PathGraph = SoftPathGraph.LoadSynchronous())
 			{
@@ -73,7 +78,7 @@ void UPathGraphSubsystem::OnLevelLoaded(ULevel* Level, UWorld* World)
 
 void UPathGraphSubsystem::OnLevelUnloaded(ULevel* Level, UWorld* World)
 {
-	if (GetDefault<UGraphChaRtSettings>()->LevelPathGraphPaths.Find(Level->GetOutermost()->GetFName()))
+	if (GetDefault<UGraphChaRtSettings>()->LevelPathGraphPaths.Contains(Level))
 	{
 		PathGraphs.Remove(Level);
 	}

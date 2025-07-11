@@ -13,14 +13,12 @@
  * 
  */
 
-static const FName PathGraphMainTabID("PathGraphMainTab");
-
 class FPathGraphAssetTypeActions : public FAssetTypeActions_Base
 {
 public:
 
 	FORCEINLINE virtual FText GetName() const override { return NSLOCTEXT("AssetTypeActions", "FGraphAsset", "Path Graph"); }
-	FORCEINLINE virtual FColor GetTypeColor() const override { return FColor::Green; }
+	FORCEINLINE virtual FColor GetTypeColor() const override { return FColor::Purple; }
 	FORCEINLINE virtual UClass* GetSupportedClass() const override { return UPathGraph::StaticClass(); }
 	FORCEINLINE virtual uint32 GetCategories() override { return EAssetTypeCategories::Misc; }
 	FORCEINLINE virtual const FSlateBrush* GetIconBrush(const FAssetData& InAssetData, const FName InClassName) const override { return FGraphChaRtEditorStyle::Get().GetBrush("ClassIcon.PathGraph"); }
@@ -49,16 +47,33 @@ public:
 	virtual FString GetWorldCentricTabPrefix() const override { return TEXT("MyCustom"); }
 	virtual FLinearColor GetWorldCentricTabColorScale() const override { return FLinearColor::White; }
 	virtual const TArray<UObject*>* GetObjectsCurrentlyBeingEdited() const override { return &EditedObjects; }
-
+	
 	virtual void RegisterTabSpawners(const TSharedRef<FTabManager>& InTabManager) override;
 
-	TSharedRef<SDockTab> SpawnPathGraphMainTab(const FSpawnTabArgs& Args);
+private:
+
+	void BindCommands();
+
+	void SaveGraph();
+	bool CanSaveGraph();
+	void AddNode();
+	bool CanAddNode();
+	void DeleteSelectedNodes();
+	bool CanDeleteNodes();
 
 private:
+
+	TSharedRef<SDockTab> SpawnTab_GraphCanvas(const FSpawnTabArgs& Args);
+	TSharedRef<SDockTab> SpawnTab_Details(const FSpawnTabArgs& Args);
+	TSharedRef<SDockTab> SpawnTab_GraphView(const FSpawnTabArgs& Args);
+	
 	
 	UPathGraph* EditedPathGraph = nullptr;
-
 	TArray<UObject*> EditedObjects;
+
+	static const FName GraphCanvasTabID;
+	static const FName DetailsTabID;
+	static const FName GraphViewTabID;
 	
 };
 

@@ -4,8 +4,8 @@
 
 #include "AssetToolsModule.h"
 #include "GraphChaRtEditorStyle.h"
-#include "GraphChaRtEditorCommands.h"
-#include "LevelEditor.h"
+#include "EditorCommands/GraphChaRtEditorCommands.h"
+#include "EditorCommands/PathGraphEditorCommands.h"
 #include "Widgets/Docking/SDockTab.h"
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/Text/STextBlock.h"
@@ -26,6 +26,7 @@ void FGraphChaRtEditorModule::StartupModule()
 	FGraphChaRtEditorStyle::ReloadTextures();
 
 	FGraphChaRtEditorCommands::Register();
+	FPathGraphEditorCommands::Register();
 	
 	PluginCommands = MakeShareable(new FUICommandList);
 
@@ -64,6 +65,7 @@ void FGraphChaRtEditorModule::ShutdownModule()
 	FGraphChaRtEditorStyle::Shutdown();
 
 	FGraphChaRtEditorCommands::Unregister();
+	FPathGraphEditorCommands::Unregister();
 
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(GraphChaRtEditorTabName);
 
