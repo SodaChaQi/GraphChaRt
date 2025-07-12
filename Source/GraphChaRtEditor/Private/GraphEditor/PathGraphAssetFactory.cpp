@@ -4,7 +4,7 @@
 #include "GraphEditor/PathGraphAssetFactory.h"
 
 #include "EditorCommands/PathGraphEditorCommands.h"
-#include "GraphEditor/SPathGraphEditor.h"
+#include "GraphEditor/Slate/PathGraph/SPathGraphEditor.h"
 
 const FName FPathGraphAssetEditorToolkit::GraphCanvasTabID = FName("PathGraphEditor_GraphCanvas");
 const FName FPathGraphAssetEditorToolkit::DetailsTabID("PathGraphEditor_Details");

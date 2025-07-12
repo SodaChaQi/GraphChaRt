@@ -1,9 +1,13 @@
 ﻿
-#include "GraphEditor/SPathGraphEditor.h"
+#include "GraphEditor/Slate/PathGraph/SPathGraphEditor.h"
 
-#include "EditorCommands/PathGraphEditorCommands.h"
-#include "Framework/Commands/GenericCommands.h"
 #include "Graph/Graphs.h"
+#include "GraphEditor/PathGraphSchema.h"
+#include "Framework/Commands/GenericCommands.h"
+#include "EditorCommands/PathGraphEditorCommands.h"
+
+
+
 
 #define LOCTEXT_NAMESPACE "PathGraphEditor"
 

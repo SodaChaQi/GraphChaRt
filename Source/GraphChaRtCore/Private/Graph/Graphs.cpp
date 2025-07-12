@@ -8,11 +8,6 @@
 
 DEFINE_LOG_CATEGORY(GraphsLog);
 
-UPathGraphSchema::UPathGraphSchema(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
-{
-}
-
 UPathGraph::UPathGraph()
 	: LevelContext(nullptr)
 	, EdGraph(nullptr)
