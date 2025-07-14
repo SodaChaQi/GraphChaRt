@@ -3,6 +3,8 @@
 #include "SGraphNode.h"
 #include "GraphEditor/Slate/PathGraph/SPathGraphPin.h"
 
+class UPathEdGraphNode;
+
 class SPathGraphNode : public SGraphNode
 {
 	
@@ -12,7 +14,7 @@ public:
 		
 	SLATE_END_ARGS()
 
-	void Construct(const FArguments& InArgs, UEdGraphNode* InNode);
+	void Construct(const FArguments& InArgs, UPathEdGraphNode* InNode);
 
 
 	virtual void UpdateGraphNode() override;

@@ -2,11 +2,10 @@
 #include "GraphEditor/Slate/PathGraph/SPathGraphEditor.h"
 
 #include "Graph/Graphs.h"
-#include "GraphEditor/PathGraphSchema.h"
+#include "GraphEditor/EdGraph/PathGraph/PathEdGraphSchema.h"
 #include "Framework/Commands/GenericCommands.h"
 #include "EditorCommands/PathGraphEditorCommands.h"
-
-
+#include "GraphEditor/EdGraph/PathGraph/PathEdGraph.h"
 
 
 #define LOCTEXT_NAMESPACE "PathGraphEditor"
@@ -98,18 +97,18 @@ TSharedRef<SGraphEditor> SPathGraphEditor::CreateGraphEditor()
 		return SNew(SGraphEditor);
 	}
 
-	UEdGraph* EdGraphToUse = EditedPathGraph->GetEdGraph();
-	if (!EdGraphToUse)
+	UPathEdGraph* PathEdGraph = Cast<UPathEdGraph>(EditedPathGraph->GetEdGraph());
+	if (!PathEdGraph)
 	{
-		EdGraphToUse = NewObject<UEdGraph>(EditedPathGraph.Get(), UEdGraph::StaticClass(), NAME_None, RF_Transactional);
-		EdGraphToUse->Schema = UPathGraphSchema::StaticClass(); // 可选
-		EditedPathGraph->EdGraph = EdGraphToUse;
+		PathEdGraph = NewObject<UPathEdGraph>(EditedPathGraph.Get(), UPathEdGraph::StaticClass(), NAME_None, RF_Transactional);
+		PathEdGraph->Schema = UPathEdGraphSchema::StaticClass();
+		EditedPathGraph->EdGraph = PathEdGraph;
 	}
 
 	return SAssignNew(GraphEditor, SGraphEditor)
 		.AdditionalCommands(CommandList)
 		.Appearance(GraphAppearanceInfo)
-		.GraphToEdit(EdGraphToUse)
+		.GraphToEdit(PathEdGraph)
 		.GraphEvents(GraphEditorEvents);
 }
 

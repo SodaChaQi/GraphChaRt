@@ -3,7 +3,7 @@
 
 #include "CoreMinimal.h"
 #include "GraphImpls.h"
-#include "EdGraph/EdGraphSchema.h"
+// #include ""
 
 #include "Graphs.generated.h"
 
@@ -12,6 +12,8 @@
 /**
  * 
  */
+
+class UPathEdGraph;
 
 DECLARE_LOG_CATEGORY_EXTERN(GraphsLog, Log, All);
 

@@ -1,14 +1,24 @@
 ﻿
 #include "GraphEditor/Slate/PathGraph/SPathGraphNode.h"
 
+#include "GraphEditor/EdGraph/PathGraph/PathEdGraphNode.h"
 
-void SPathGraphNode::Construct(const FArguments& InArgs, UEdGraphNode* InNode)
+
+void SPathGraphNode::Construct(const FArguments& InArgs, UPathEdGraphNode* InNode)
 {
-	// SGraphNode::Construct(SGraphNode::FArguments(), InNode);
+	GraphNode = Cast<UEdGraphNode>(InNode);
+
+	SetCursor(EMouseCursor::CardinalCross);
+	UpdateGraphNode();
 }
 
 void SPathGraphNode::UpdateGraphNode()
 {
+	InputPins.Empty();
+	OutputPins.Empty();
+	RightNodeBox.Reset();
+	LeftNodeBox.Reset();
+	
 	// 清除默认内容
 	ContentScale.Bind(this, &SGraphNode::GetContentScale);
 	GetOrAddSlot(ENodeZone::Center)

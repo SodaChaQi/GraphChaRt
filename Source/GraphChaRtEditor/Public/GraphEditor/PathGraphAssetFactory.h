@@ -53,6 +53,7 @@ public:
 private:
 
 	void BindCommands();
+	void FillToolbarExtents(FToolBarBuilder& ToolbarBuilder);
 
 	void SaveGraph();
 	bool CanSaveGraph();
@@ -60,12 +61,17 @@ private:
 	bool CanAddNode();
 	void DeleteSelectedNodes();
 	bool CanDeleteNodes();
+	void Check();
+	bool CanCheck();
 
 private:
 
 	TSharedRef<SDockTab> SpawnTab_GraphCanvas(const FSpawnTabArgs& Args);
 	TSharedRef<SDockTab> SpawnTab_Details(const FSpawnTabArgs& Args);
 	TSharedRef<SDockTab> SpawnTab_GraphView(const FSpawnTabArgs& Args);
+	TSharedRef<SDockTab> SpawnTab_CheckResult(const FSpawnTabArgs& Args);
+
+	TSharedPtr<FExtender> ToolbarExtender;
 	
 	
 	UPathGraph* EditedPathGraph = nullptr;
@@ -74,7 +80,7 @@ private:
 	static const FName GraphCanvasTabID;
 	static const FName DetailsTabID;
 	static const FName GraphViewTabID;
-	
+	static const FName CheckResultTabID;
 };
 
 UCLASS()

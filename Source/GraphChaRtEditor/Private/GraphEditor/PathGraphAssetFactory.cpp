@@ -4,11 +4,13 @@
 #include "GraphEditor/PathGraphAssetFactory.h"
 
 #include "EditorCommands/PathGraphEditorCommands.h"
+#include "GraphEditor/Slate/PathGraph/SPathGraphCheckResult.h"
 #include "GraphEditor/Slate/PathGraph/SPathGraphEditor.h"
 
 const FName FPathGraphAssetEditorToolkit::GraphCanvasTabID = FName("PathGraphEditor_GraphCanvas");
 const FName FPathGraphAssetEditorToolkit::DetailsTabID("PathGraphEditor_Details");
 const FName FPathGraphAssetEditorToolkit::GraphViewTabID("PathGraphEditor_GraphView");
+const FName FPathGraphAssetEditorToolkit::CheckResultTabID("PathGraphEditor_CheckResult");
 
 
 void FPathGraphAssetTypeActions::OpenAssetEditor(const TArray<UObject*>& InObjects,
@@ -39,12 +41,23 @@ void FPathGraphAssetTypeActions::OpenAssetEditor(const TArray<UObject*>& InObjec
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
+#define LOCTEXT_NAMESPACE "PathGraphAssetEditorToolkit"
+
 void FPathGraphAssetEditorToolkit::InitPathGraphAssetEditor(const EToolkitMode::Type Mode,
 	const TSharedPtr<IToolkitHost>& InitToolkitHost, UPathGraph* InAsset)
 {
 	EditedPathGraph = InAsset;
 
 	EditedObjects = { EditedPathGraph };
+
+	ToolbarExtender = MakeShared<FExtender>();
+	ToolbarExtender->AddToolBarExtension(
+		"Asset",
+		EExtensionHook::After,
+		GetToolkitCommands(),
+		FToolBarExtensionDelegate::CreateRaw(this, &FPathGraphAssetEditorToolkit::FillToolbarExtents)
+		);
+	AddToolbarExtender(ToolbarExtender);
 
 	const TSharedRef<FTabManager::FLayout> PathGraphEditorLayout = FTabManager::NewLayout("PathGraphEditorLayout")
 	->AddArea
@@ -57,28 +70,33 @@ void FPathGraphAssetEditorToolkit::InitPathGraphAssetEditor(const EToolkitMode::
 			->Split
 			(
 			FTabManager::NewStack()
-					->SetSizeCoefficient(0.7f)
-					->AddTab(GraphCanvasTabID, ETabState::OpenedTab)
+					->SetSizeCoefficient(0.3f)
+					->AddTab(GraphViewTabID, ETabState::OpenedTab)
 			)
 			->Split
 			(
 				FTabManager::NewSplitter()
+				->SetSizeCoefficient(0.4f)
 				->SetOrientation(Orient_Vertical)
+				->Split
+				(
+					FTabManager::NewStack()
+					->SetSizeCoefficient(0.7f)
+					->AddTab(GraphCanvasTabID, ETabState::OpenedTab)
+				)
+				->Split
+				(
+					FTabManager::NewStack()
+					->SetSizeCoefficient(0.3f)
+					->AddTab(CheckResultTabID, ETabState::OpenedTab)
+				)
+
+			)
+			->Split
+			(
+				FTabManager::NewStack()
 				->SetSizeCoefficient(0.3f)
-				->Split
-				(
-					FTabManager::NewStack()
-					->SetSizeCoefficient(0.6f)
-					->AddTab(DetailsTabID, ETabState::OpenedTab)
-				)
-				->Split
-				(
-					FTabManager::NewStack()
-					->SetSizeCoefficient(0.4f)
-					->AddTab(GraphViewTabID, ETabState::OpenedTab)
-
-				)
-
+				->AddTab(DetailsTabID, ETabState::OpenedTab)
 			)
 		)
 	);
@@ -111,6 +129,9 @@ void FPathGraphAssetEditorToolkit::RegisterTabSpawners(const TSharedRef<FTabMana
 	InTabManager->RegisterTabSpawner(DetailsTabID, FOnSpawnTab::CreateSP(this, &FPathGraphAssetEditorToolkit::SpawnTab_Details))
 	.SetDisplayName(NSLOCTEXT("PathGraphEditor", "GraphDetailsTab", "Details"));
 
+	InTabManager->RegisterTabSpawner(CheckResultTabID, FOnSpawnTab::CreateSP(this, &FPathGraphAssetEditorToolkit::SpawnTab_CheckResult))
+	.SetDisplayName(NSLOCTEXT("PathGraphEditor", "CheckResultTab", "CheckResult"));
+
 	
 	// .SetGroup(WorkspaceMenuCategory.ToSharedRef());
 }
@@ -136,6 +157,22 @@ void FPathGraphAssetEditorToolkit::BindCommands()
 		FExecuteAction::CreateSP(this, &FPathGraphAssetEditorToolkit::DeleteSelectedNodes),
 		FCanExecuteAction::CreateSP(this, &FPathGraphAssetEditorToolkit::CanDeleteNodes)
 	);
+}
+
+void FPathGraphAssetEditorToolkit::FillToolbarExtents(FToolBarBuilder& ToolbarBuilder)
+{
+	ToolbarBuilder.BeginSection(TEXT("Graph Editor Toolbar"));
+	{
+		ToolbarBuilder.AddToolBarButton(
+			FUIAction(FExecuteAction::CreateRaw(this, &FPathGraphAssetEditorToolkit::Check),
+				FCanExecuteAction::CreateRaw(this, &FPathGraphAssetEditorToolkit::CanCheck)),
+				NAME_None,
+				LOCTEXT("MyButtonLabel", "Check"),
+				LOCTEXT("MyButtonTooltip", "Check All Node and Edge"),
+				FSlateIcon(FGraphChaRtEditorStyle::GetStyleSetName(), "GraphChaRtEditor.OpenPluginWindow")
+				);
+	}
+	ToolbarBuilder.EndSection();
 }
 
 void FPathGraphAssetEditorToolkit::SaveGraph()
@@ -165,6 +202,15 @@ bool FPathGraphAssetEditorToolkit::CanDeleteNodes()
 	return true;
 }
 
+void FPathGraphAssetEditorToolkit::Check()
+{
+}
+
+bool FPathGraphAssetEditorToolkit::CanCheck()
+{
+	return true;
+}
+
 TSharedRef<SDockTab> FPathGraphAssetEditorToolkit::SpawnTab_GraphCanvas(const FSpawnTabArgs& Args)
 {
 	check(IsValid(EditedPathGraph));
@@ -189,6 +235,17 @@ TSharedRef<SDockTab> FPathGraphAssetEditorToolkit::SpawnTab_GraphView(const FSpa
 	return SNew(SDockTab);
 }
 
+TSharedRef<SDockTab> FPathGraphAssetEditorToolkit::SpawnTab_CheckResult(const FSpawnTabArgs& Args)
+{
+	return SNew(SDockTab)
+		.TabRole(NomadTab)
+		[
+			SNew(SPathGraphCheckResult)
+		];
+}
+
+
+#undef LOCTEXT_NAMESPACE
 
 ////////////////////////////////////////////////////////////////////////////////////////
 

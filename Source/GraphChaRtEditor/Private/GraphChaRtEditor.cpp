@@ -11,7 +11,7 @@
 #include "Widgets/Text/STextBlock.h"
 #include "ToolMenus.h"
 #include "GraphEditor/PathGraphAssetFactory.h"
-
+#include "GraphEditor/EdGraph/PathGraph/PathEdGraphNode.h"
 
 
 static const FName GraphChaRtEditorTabName("GraphChaRtEditor");
@@ -20,23 +20,27 @@ static const FName GraphChaRtEditorTabName("GraphChaRtEditor");
 
 void FGraphChaRtEditorModule::StartupModule()
 {
-	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
-	
 	FGraphChaRtEditorStyle::Initialize();
 	FGraphChaRtEditorStyle::ReloadTextures();
 
+	//注册节点工厂
+	PathEdGraphNodeFactory = MakeShareable( new FPathEdGraphNodeFactory());
+	FEdGraphUtilities::RegisterVisualNodeFactory(PathEdGraphNodeFactory);
+
+	//注册命令
 	FGraphChaRtEditorCommands::Register();
 	FPathGraphEditorCommands::Register();
-	
-	PluginCommands = MakeShareable(new FUICommandList);
 
+	//绑定Plugins层级命令
+	PluginCommands = MakeShareable(new FUICommandList);
 	PluginCommands->MapAction(
 		FGraphChaRtEditorCommands::Get().OpenPluginWindow,
 		FExecuteAction::CreateRaw(this, &FGraphChaRtEditorModule::PluginButtonClicked),
 		FCanExecuteAction());
 
 	UToolMenus::RegisterStartupCallback(FSimpleMulticastDelegate::FDelegate::CreateRaw(this, &FGraphChaRtEditorModule::RegisterMenus));
-	
+
+	//注册Plugins按钮
 	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(GraphChaRtEditorTabName, FOnSpawnTab::CreateRaw(this, &FGraphChaRtEditorModule::OnSpawnPluginTab))
 		.SetDisplayName(LOCTEXT("FGraphChaRtEditorTabTitle", "GraphChaRtEditor"))
 		.SetMenuType(ETabSpawnerMenuType::Hidden);
@@ -64,9 +68,15 @@ void FGraphChaRtEditorModule::ShutdownModule()
 
 	FGraphChaRtEditorStyle::Shutdown();
 
+	//释放节点工厂
+	FEdGraphUtilities::UnregisterVisualNodeFactory(PathEdGraphNodeFactory);
+	PathEdGraphNodeFactory.Reset();
+	
+	//释放命令
 	FGraphChaRtEditorCommands::Unregister();
 	FPathGraphEditorCommands::Unregister();
 
+	//释放Plugins按钮
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(GraphChaRtEditorTabName);
 
 	//取消注册资产
