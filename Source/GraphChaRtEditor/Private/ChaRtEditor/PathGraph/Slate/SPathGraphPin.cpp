@@ -1,21 +1,29 @@
 ﻿
-#include "GraphEditor/Slate/PathGraph/SPathGraphPin.h"
+#include "ChaRtEditor/PathGraph/Slate/SPathGraphPin.h"
 
 
 
 void SPathGraphPin::Construct(const FArguments& InArgs, UEdGraphPin* InPin)
 {
+	this->SetCursor(EMouseCursor::Default);
+	bShowLabel = true;
+
 	SGraphPin::Construct(SGraphPin::FArguments(), InPin);
 }
 
 TSharedRef<SWidget> SPathGraphPin::GetDefaultValueWidget()
 {
-	if (GetPinObj() && GetPinObj()->PinType.PinCategory == "exec")
-	{
-		return SNullWidget::NullWidget;
-	}
+	// if (GetPinObj() && GetPinObj()->PinType.PinCategory == "exec")
+	// {
+	// 	return SNullWidget::NullWidget;
+	// }
     
-	return SGraphPin::GetDefaultValueWidget();
+	return SNew(STextBlock).Text(FText::GetEmpty());
+}
+
+const FSlateBrush* SPathGraphPin::GetPinIcon() const
+{
+	return FAppStyle::GetBrush("Graph.Pin.Connected");
 }
 
 FSlateColor SPathGraphPin::GetPinColor() const

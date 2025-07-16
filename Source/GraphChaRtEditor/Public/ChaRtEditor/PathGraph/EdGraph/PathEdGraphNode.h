@@ -3,9 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "EdGraphUtilities.h"
 #include "EdGraph/EdGraphNode.h"
-#include "GraphEditor/Slate/PathGraph/SPathGraphNode.h"
 #include "PathEdGraphNode.generated.h"
 
 /**
@@ -23,16 +21,11 @@ public:
 
 	virtual void AllocateDefaultPins() override;
 	virtual FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;
-};
+	// virtual void PinConnectionListChanged(UEdGraphPin* Pin) override;
+	//
+	// virtual void OnPinRemoved(UEdGraphPin* InRemovedPin) override;
 
-class FPathEdGraphNodeFactory : public FGraphPanelNodeFactory
-{
-	virtual TSharedPtr<SGraphNode> CreateNode(class UEdGraphNode* Node) const override
-	{
-		if (UPathEdGraphNode* PathEdGraphNode = Cast<UPathEdGraphNode>(Node))
-		{
-			return SNew(SPathGraphNode, PathEdGraphNode);
-		}
-		return nullptr;
-	}
+	// void AddPin(
+	// 	EEdGraphPinDirection Direction,
+	// 	const FName& PinName);
 };

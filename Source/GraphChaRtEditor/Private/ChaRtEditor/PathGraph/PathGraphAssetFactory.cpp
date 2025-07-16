@@ -1,11 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "GraphEditor/PathGraphAssetFactory.h"
+#include "ChaRtEditor/PathGraph/PathGraphAssetFactory.h"
 
 #include "EditorCommands/PathGraphEditorCommands.h"
-#include "GraphEditor/Slate/PathGraph/SPathGraphCheckResult.h"
-#include "GraphEditor/Slate/PathGraph/SPathGraphEditor.h"
+#include "ChaRtEditor/PathGraph/Slate/SPathGraphCheckResult.h"
+#include "ChaRtEditor/PathGraph/Slate/SPathGraphEditor.h"
 
 const FName FPathGraphAssetEditorToolkit::GraphCanvasTabID = FName("PathGraphEditor_GraphCanvas");
 const FName FPathGraphAssetEditorToolkit::DetailsTabID("PathGraphEditor_Details");

@@ -10,8 +10,8 @@
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/Text/STextBlock.h"
 #include "ToolMenus.h"
-#include "GraphEditor/PathGraphAssetFactory.h"
-#include "GraphEditor/EdGraph/PathGraph/PathEdGraphNode.h"
+#include "FGraphPanelFactorys.h"
+#include "ChaRtEditor/PathGraph/PathGraphAssetFactory.h"
 
 
 static const FName GraphChaRtEditorTabName("GraphChaRtEditor");
@@ -24,7 +24,7 @@ void FGraphChaRtEditorModule::StartupModule()
 	FGraphChaRtEditorStyle::ReloadTextures();
 
 	//注册节点工厂
-	PathEdGraphNodeFactory = MakeShareable( new FPathEdGraphNodeFactory());
+	PathEdGraphNodeFactory = MakeShareable( new FGraphChaRtNodeFactory());
 	FEdGraphUtilities::RegisterVisualNodeFactory(PathEdGraphNodeFactory);
 
 	//注册命令
@@ -76,7 +76,7 @@ void FGraphChaRtEditorModule::ShutdownModule()
 	FGraphChaRtEditorCommands::Unregister();
 	FPathGraphEditorCommands::Unregister();
 
-	//释放Plugins按钮
+	//释放Plugins按钮面板
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(GraphChaRtEditorTabName);
 
 	//取消注册资产

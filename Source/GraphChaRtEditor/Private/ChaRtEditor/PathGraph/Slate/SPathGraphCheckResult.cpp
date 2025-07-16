@@ -1,6 +1,6 @@
 ﻿
 
-#include "GraphEditor/Slate/PathGraph/SPathGraphCheckResult.h"
+#include "ChaRtEditor/PathGraph/Slate/SPathGraphCheckResult.h"
 
 void SPathGraphCheckResult::Construct(const FArguments& InArgs)
 {

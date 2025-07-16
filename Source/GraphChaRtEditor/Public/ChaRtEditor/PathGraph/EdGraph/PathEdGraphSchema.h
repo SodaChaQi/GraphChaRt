@@ -2,12 +2,26 @@
 
 
 #include "CoreMinimal.h"
+#include "ConnectionDrawingPolicy.h"
 #include "PathEdGraphNode.h"
 #include "EdGraph/EdGraphSchema.h"
 #include "PathEdGraphSchema.generated.h"
 
 
 class UPathEdGraph;
+
+class FPathEdGraphConnectionDrawingPolicy : public FConnectionDrawingPolicy
+{
+public:
+
+	FPathEdGraphConnectionDrawingPolicy(int32 InBackLayerID, int32 InFrontLayerID,
+	float InZoomFactor, const FSlateRect& InClippingRect, class FSlateWindowElementList& InDrawElements)
+	: FConnectionDrawingPolicy(InBackLayerID, InFrontLayerID, InZoomFactor, InClippingRect, InDrawElements)
+	{}
+
+	virtual void DrawSplineWithArrow(const FGeometry& StartGeom, const FGeometry& EndGeom, const FConnectionParams& Params) override;
+	
+};
 
 template<typename NodeType>
 struct TPathEdGraphSchemaAction : public FEdGraphSchemaAction
@@ -47,6 +61,14 @@ public:
 	{
 		return FPinConnectionResponse(CONNECT_RESPONSE_MAKE, TEXT(""));
 	}
+
+	virtual FConnectionDrawingPolicy* CreateConnectionDrawingPolicy(
+		int32 InBackLayerID,
+		int32 InFrontLayerID,
+		float InZoomFactor,
+		const FSlateRect& InClippingRect,
+		class FSlateWindowElementList& InDrawElements,
+		class UEdGraph* InGraphObj) const override;
 
 	static UPathEdGraphNode* AddPathEdGraphNodeToGraph(UPathEdGraph* Graph, const FVector2D& Position);
 };

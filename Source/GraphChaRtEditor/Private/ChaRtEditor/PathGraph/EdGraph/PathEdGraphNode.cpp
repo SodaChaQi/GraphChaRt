@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "GraphEditor/EdGraph/PathGraph/PathEdGraphNode.h"
+#include "ChaRtEditor/PathGraph/EdGraph/PathEdGraphNode.h"
 
 UPathEdGraphNode::UPathEdGraphNode()
 {

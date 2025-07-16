@@ -1,9 +1,13 @@
 ﻿#pragma once
 
 #include "SGraphNode.h"
-#include "GraphEditor/Slate/PathGraph/SPathGraphPin.h"
 
+
+class SConstraintCanvas;
 class UPathEdGraphNode;
+class SGraphPin;
+
+const FVector2D NormalizedSize = FVector2D(200, 100);
 
 class SPathGraphNode : public SGraphNode
 {
@@ -19,12 +23,17 @@ public:
 
 	virtual void UpdateGraphNode() override;
 	virtual void CreatePinWidgets() override;
-	virtual TSharedPtr<SGraphPin> CreatePinWidget(UEdGraphPin* Pin) const override;
 	virtual void AddPin(const TSharedRef<SGraphPin>& PinToAdd) override;
+
+	FORCEINLINE virtual FVector2D ComputeDesiredSize(float) const override { return NormalizedSize; }
+
+protected:
+
+	virtual TSharedPtr<SGraphPin> CreatePinWidget(UEdGraphPin* Pin) const override;
 
 private:
 
 	virtual TSharedRef<SWidget> CreateNodeContentArea() override;
 
-	TSharedPtr<SVerticalBox> PinBox;
+	TSharedPtr<SConstraintCanvas> Canvas;
 };

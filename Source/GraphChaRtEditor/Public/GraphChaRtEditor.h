@@ -5,7 +5,7 @@
 #include "IAssetTypeActions.h"
 #include "Modules/ModuleManager.h"
 
-class FPathEdGraphNodeFactory;
+class FGraphChaRtNodeFactory;
 class FToolBarBuilder;
 class FMenuBuilder;
 
@@ -26,7 +26,7 @@ private:
 
 	TSharedRef<class SDockTab> OnSpawnPluginTab(const class FSpawnTabArgs& SpawnTabArgs);
 
-	TSharedPtr<FPathEdGraphNodeFactory> PathEdGraphNodeFactory;
+	TSharedPtr<FGraphChaRtNodeFactory> PathEdGraphNodeFactory;
 	
 	TSharedPtr<class FUICommandList> PluginCommands;
 
