@@ -139,32 +139,33 @@ void SPathGraphNode::CreatePinWidgets()
 void SPathGraphNode::AddPin(const TSharedRef<SGraphPin>& PinToAdd)
 {
 	PinToAdd->SetOwner(SharedThis(this));
+	
+	// SGraphNode::AddPin(PinToAdd);
 
-	// if (PinBox.IsValid())
-	// {
-	// 	PinBox->AddSlot()
-	// 	.AutoHeight()
-	// 	.HAlign(HAlign_Left)
-	// 	.VAlign(VAlign_Center)
-	// 	.Padding(5, 2)
-	// 	[
-	// 		PinToAdd
-	// 	];
-	// }
-	// else
-	// {
-	// 	// 处理错误情况或回退到基类实现
-	// 	SGraphNode::AddPin(PinToAdd);
-	// }
 
 	if (!Canvas.IsValid()) return;
 
 	FVector2D InitPos = FVector2D(50, 50);
 
-	Canvas->AddSlot()
-	.Offset(FMargin(InitPos.X, InitPos.Y, 0, 0))
-	.AutoSize(true)
-	[
-		PinToAdd
-	];
+	if (PinToAdd->GetDirection() == EEdGraphPinDirection::EGPD_Input)
+	{
+		Canvas->AddSlot()
+		.Offset(FMargin(InitPos.X, InitPos.Y, 0, 0))
+		.AutoSize(true)
+		[
+			PinToAdd
+		];
+		InputPins.Add(PinToAdd);
+	}
+	else
+	{
+		Canvas->AddSlot()
+		.Offset(FMargin(InitPos.X + 100, InitPos.Y, 0, 0))
+		.AutoSize(true)
+		[
+			PinToAdd
+		];
+		OutputPins.Add(PinToAdd);
+	}
+
 }

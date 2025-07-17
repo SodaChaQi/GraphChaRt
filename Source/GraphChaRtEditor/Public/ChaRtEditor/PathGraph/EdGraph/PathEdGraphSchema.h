@@ -17,9 +17,19 @@ public:
 	FPathEdGraphConnectionDrawingPolicy(int32 InBackLayerID, int32 InFrontLayerID,
 	float InZoomFactor, const FSlateRect& InClippingRect, class FSlateWindowElementList& InDrawElements)
 	: FConnectionDrawingPolicy(InBackLayerID, InFrontLayerID, InZoomFactor, InClippingRect, InDrawElements)
-	{}
+	{
+		WireLayerID = InBackLayerID;
+		ArrowLayerID = InFrontLayerID;
 
+	// 	UE_LOG(LogTemp, Warning, TEXT("Connection Policy Created: WireLayer=%d, ArrowLayer=%d"), 
+	// WireLayerID, ArrowLayerID);
+	}
+
+	virtual void Draw(TMap<TSharedRef<SWidget>, FArrangedWidget>& InPinGeometries, FArrangedChildren& ArrangedNodes) override;
+	virtual void DrawPinGeometries(TMap<TSharedRef<SWidget>, FArrangedWidget>& InPinGeometries, FArrangedChildren& ArrangedNodes) override;
 	virtual void DrawSplineWithArrow(const FGeometry& StartGeom, const FGeometry& EndGeom, const FConnectionParams& Params) override;
+	virtual void DrawSplineWithArrow(const FVector2D& StartPoint, const FVector2D& EndPoint, const FConnectionParams& Params) override;
+	virtual void DetermineWiringStyle(UEdGraphPin* OutputPin, UEdGraphPin* InputPin, FConnectionParams& Params) override;
 	
 };
 
